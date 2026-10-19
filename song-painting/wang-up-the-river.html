@@ -1,0 +1,1126 @@
+<title>宋画阅读工作台</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap">
+<style>
+/* Layout: fixed week index on the left, one centered justified reading column; mineral-pigment callouts */
+:root {
+  --bg: #f5f6f3;
+  --panel: #eceee9;
+  --paper: #fbfbf9;
+  --ink: #23272b;
+  --ink-2: #565d63;
+  --ink-3: #8a9196;
+  --line: #d9ddd8;
+  --accent: #2f5d7c;          /* 石青 azurite */
+  --accent-soft: #e3ebf0;
+
+  --core: #2f5d7c;   --core-bg: #e8eff3;   /* 核心观点 石青 */
+  --def: #8a5a2b;    --def-bg: #f4ece2;    /* 定义 赭石 */
+  --res: #3d7a5f;    --res-bg: #e5f0ea;    /* 研究 石绿 */
+  --con: #8c3b52;    --con-bg: #f4e6ea;    /* 结论 胭脂 */
+
+  --hl-yellow: rgba(250, 214, 60, .45);
+  --hl-green: rgba(120, 200, 120, .40);
+  --hl-pink: rgba(245, 130, 175, .38);
+
+  --shadow: 0 6px 24px rgba(30, 40, 50, .14);
+
+  --f-body: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --f-ui: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --f-latin: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16191c; --panel: #1c2024; --paper: #1a1e21; --ink: #e3e5e3; --ink-2: #aeb4b8; --ink-3: #7c848a;
+    --line: #30363b; --accent: #8fb6d1; --accent-soft: #22303a;
+    --core: #8fb6d1; --core-bg: #1f2b33; --def: #d6aa7a; --def-bg: #2b241c;
+    --res: #8cc7a8; --res-bg: #1c2a23; --con: #e09ab0; --con-bg: #2e1f25;
+    --hl-yellow: rgba(230, 190, 40, .38); --hl-green: rgba(90, 180, 100, .36); --hl-pink: rgba(230, 100, 150, .36);
+    --shadow: 0 6px 24px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16191c; --panel: #1c2024; --paper: #1a1e21; --ink: #e3e5e3; --ink-2: #aeb4b8; --ink-3: #7c848a;
+  --line: #30363b; --accent: #8fb6d1; --accent-soft: #22303a;
+  --core: #8fb6d1; --core-bg: #1f2b33; --def: #d6aa7a; --def-bg: #2b241c;
+  --res: #8cc7a8; --res-bg: #1c2a23; --con: #e09ab0; --con-bg: #2e1f25;
+  --hl-yellow: rgba(230, 190, 40, .38); --hl-green: rgba(90, 180, 100, .36); --hl-pink: rgba(230, 100, 150, .36);
+  --shadow: 0 6px 24px rgba(0, 0, 0, .5);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.9; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+
+/* ---- Sidebar ---- */
+.side {
+  position: sticky; top: env(safe-area-inset-top, 0px); align-self: start; height: 100vh; overflow-y: auto;
+  background: var(--panel); border-right: 1px solid var(--line);
+  padding-block: 28px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: 18px;
+  font-family: var(--f-ui); font-size: 14px; line-height: 1.6;
+}
+.side .brand { font-family: var(--f-body); font-weight: 700; font-size: 20px; letter-spacing: .08em; }
+.side .brand small { display: block; font-family: var(--f-ui); font-weight: 400; font-size: 12px; color: var(--ink-3); letter-spacing: .04em; margin-top: 2px; }
+.weeks { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 6px; }
+.week-btn {
+  width: 100%; text-align: left; background: none; border: 0; border-radius: 6px; cursor: pointer;
+  padding: 8px 10px; display: grid; gap: 1px;
+}
+.week-btn:hover { background: var(--accent-soft); }
+.week-btn .wk { font-size: 11px; letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase; }
+.week-btn .wt { font-weight: 500; }
+.week[aria-current="true"] .week-btn { background: var(--accent-soft); color: var(--accent); }
+.week-items { list-style: none; margin: 4px 0 6px 10px; padding: 0 0 0 10px; border-left: 1px solid var(--line); display: none; }
+.week[aria-current="true"] .week-items { display: grid; gap: 2px; }
+.week-items a { display: block; padding: 4px 6px; color: var(--ink-2); text-decoration: none; border-radius: 4px; }
+.week-items a:hover { color: var(--accent); }
+.week-items .pending { color: var(--ink-3); padding: 4px 6px; }
+.week-items .pending::after { content: " · 待学"; font-size: 12px; }
+.side .legend { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--line); display: grid; gap: 6px; font-size: 12.5px; color: var(--ink-2); }
+.side .legend span { display: flex; align-items: center; gap: 8px; }
+.side .legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.save-state { margin-top: 18px; font-size: 12px; color: var(--ink-3); }
+
+/* ---- Reading column ---- */
+.main { min-width: 0; padding-block: 48px 120px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.col { max-width: 40em; margin: 0 auto; }
+.week-head { font-family: var(--f-ui); font-size: 13px; letter-spacing: .14em; color: var(--ink-3); margin-bottom: 28px; }
+article.reading { margin-bottom: 96px; }
+.reading header { margin-bottom: 32px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.reading .kicker { font-family: var(--f-ui); font-size: 12px; letter-spacing: .16em; color: var(--accent); }
+.reading h1 { font-size: 30px; line-height: 1.35; margin: 6px 0 4px; text-wrap: balance; font-weight: 700; }
+.reading h1 .en { display: block; font-family: var(--f-latin); font-style: italic; font-weight: 500; font-size: 22px; color: var(--ink-2); margin-top: 2px; }
+.meta { font-family: var(--f-ui); font-size: 14px; color: var(--ink-2); line-height: 1.7; margin: 12px 0 0; display: grid; gap: 2px; }
+.meta b { font-weight: 500; color: var(--ink); margin-right: 6px; }
+.meta em { font-family: var(--f-latin); font-size: 16px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; padding: 0; list-style: none; }
+.tags li { font-family: var(--f-ui); font-size: 12.5px; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+
+.article-body { text-align: justify; text-justify: inter-character; hyphens: auto; }
+.article-body p { margin: 0 0 1em; }
+.article-body h2 { font-size: 21px; margin: 2.2em 0 .7em; text-wrap: balance; }
+.article-body h3 { font-size: 17px; margin: 1.4em 0 .4em; }
+.article-body ul, .article-body ol { padding-left: 1.4em; margin: 0 0 1em; }
+.article-body li { margin-bottom: .35em; }
+.en { font-family: var(--f-latin); font-size: 1.06em; }
+.mine { font-family: var(--f-ui); font-size: 12px; color: var(--ink-3); }
+
+.box { border-radius: 8px; padding: 16px 20px 6px; margin: 1.4em 0; background: var(--b-bg); border-left: 3px solid var(--b); }
+.box > .lbl { font-family: var(--f-ui); font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--b); margin-bottom: 6px; display: block; }
+.box.core { --b: var(--core); --b-bg: var(--core-bg); }
+.box.def  { --b: var(--def);  --b-bg: var(--def-bg); }
+.box.res  { --b: var(--res);  --b-bg: var(--res-bg); }
+.box.con  { --b: var(--con);  --b-bg: var(--con-bg); }
+.box h3:first-of-type { margin-top: .2em; }
+dl.terms { margin: 0 0 .8em; display: grid; gap: .6em; }
+dl.terms dt { font-weight: 600; }
+dl.terms dd { margin: 0 0 0 1em; color: var(--ink-2); }
+
+details.ex { border: 1px solid var(--line); border-radius: 6px; margin: .5em 0; background: var(--paper); }
+details.ex summary { cursor: pointer; padding: 8px 14px; font-weight: 600; list-style: none; display: flex; gap: 8px; align-items: baseline; }
+details.ex summary::-webkit-details-marker { display: none; }
+details.ex summary::before { content: "▸"; color: var(--ink-3); font-size: 12px; transition: transform .15s; }
+details.ex[open] summary::before { transform: rotate(90deg); }
+details.ex .ex-body { padding: 0 14px 10px 32px; }
+.ex-group-title { font-family: var(--f-ui); font-size: 12px; letter-spacing: .14em; color: var(--ink-3); margin: 1.6em 0 .4em; }
+
+.summary { margin-top: 2em; padding-top: 1.2em; border-top: 1px solid var(--line); }
+.summary h2 { margin-top: 0; }
+
+/* ---- Notes box ---- */
+.notes { margin-top: 36px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); padding: 18px 20px; font-family: var(--f-ui); }
+.notes h2 { font-family: var(--f-body); font-size: 19px; margin: 0 0 10px; }
+.notes textarea { width: 100%; min-height: 160px; resize: vertical; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); padding: 10px 12px; line-height: 1.7; font-family: var(--f-body); font-size: 16px; }
+.notes .hint { font-size: 12px; color: var(--ink-3); margin: 6px 0 0; }
+.hl-list { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.hl-list:empty::before { content: "还没有高亮。选中正文里的文字就能标注。"; color: var(--ink-3); font-size: 13px; }
+.hl-list li { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; cursor: pointer; padding: 6px 8px; border-radius: 6px; }
+.hl-list li:hover { background: var(--accent-soft); }
+.hl-list .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; }
+.hl-list q { font-family: var(--f-body); }
+.hl-list .n { display: block; color: var(--ink-2); font-size: 13px; margin-top: 2px; }
+.hl-list .n::before { content: "备注："; color: var(--ink-3); }
+
+/* ---- Highlights ---- */
+mark.hl { color: inherit; border-radius: 2px; padding: 0 1px; cursor: pointer; }
+mark.hl.yellow { background: var(--hl-yellow); }
+mark.hl.green { background: var(--hl-green); }
+mark.hl.pink { background: var(--hl-pink); }
+mark.hl.has-note { text-decoration: underline dotted var(--ink-3); text-underline-offset: 4px; }
+mark.hl.flash { outline: 2px solid var(--accent); }
+.c-yellow { background: var(--hl-yellow); } .c-green { background: var(--hl-green); } .c-pink { background: var(--hl-pink); }
+
+/* ---- Annotation menu (opens right under the selection) ---- */
+.menu {
+  position: absolute; z-index: 50; transform: translateX(-50%);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+  padding: 6px; font-family: var(--f-ui); font-size: 13px; width: max-content; max-width: min(340px, calc(100vw - 32px));
+}
+.menu::before { content: ""; position: absolute; top: -6px; left: var(--arrow, 50%); width: 10px; height: 10px; background: var(--paper); border-left: 1px solid var(--line); border-top: 1px solid var(--line); transform: translateX(-50%) rotate(45deg); }
+.menu .row { display: flex; align-items: center; gap: 4px; }
+.menu .sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+.menu .sw[aria-pressed="true"] { border-color: var(--ink-2); }
+.menu .act { border: 0; background: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; color: var(--ink-2); }
+.menu .act:hover { background: var(--accent-soft); color: var(--accent); }
+.menu .sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+.menu .note-edit { margin-top: 6px; display: grid; gap: 6px; }
+.menu textarea { width: 300px; max-width: 100%; min-height: 70px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: var(--bg); resize: vertical; line-height: 1.6; }
+.menu .note-view { margin-top: 6px; padding: 6px 8px; max-width: 300px; color: var(--ink); border-top: 1px solid var(--line); white-space: pre-wrap; }
+.menu .save { justify-self: end; border: 0; background: var(--accent); color: var(--paper); padding: 4px 14px; border-radius: 6px; cursor: pointer; }
+
+/* ---- Quiz ---- */
+.quiz { margin-top: 36px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); padding: 18px 20px; font-family: var(--f-ui); font-size: 15px; line-height: 1.7; }
+.quiz h2 { font-family: var(--f-body); font-size: 19px; margin: 0 0 4px; }
+.quiz .sub { color: var(--ink-3); font-size: 13px; margin: 0 0 14px; }
+.quiz fieldset { border: 0; margin: 0 0 18px; padding: 0; min-width: 0; }
+.quiz legend { font-weight: 500; padding: 0; margin-bottom: 6px; font-family: var(--f-body); font-size: 16px; }
+.quiz .opt { display: grid; grid-template-columns: 22px minmax(0, 1fr); align-items: start; gap: 6px; padding: 5px 8px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; }
+.quiz .opt:hover { background: var(--accent-soft); }
+.quiz .opt input { margin-top: 6px; accent-color: var(--accent); }
+.quiz .opt.right { border-color: var(--res); background: var(--res-bg); }
+.quiz .opt.wrong { border-color: var(--con); background: var(--con-bg); }
+.quiz .opt .tag { font-size: 12px; font-weight: 700; margin-left: 6px; }
+.quiz .opt.right .tag { color: var(--res); } .quiz .opt.wrong .tag { color: var(--con); }
+.quiz .why { margin: 6px 0 0 8px; padding: 8px 12px; border-left: 3px solid var(--line); color: var(--ink-2); font-size: 14px; }
+.quiz .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.quiz button { border: 0; background: var(--accent); color: var(--paper); padding: 6px 16px; border-radius: 6px; cursor: pointer; font: inherit; }
+.quiz button.ghost { background: none; color: var(--accent); border: 1px solid var(--line); }
+.quiz button:disabled { opacity: .5; cursor: default; }
+.quiz .score { font-weight: 700; }
+
+@media (max-width: 820px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding-block: 18px; padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); }
+  .side .legend { display: none; }
+  .main { padding-block: 28px 100px; }
+  .reading h1 { font-size: 25px; }
+  body { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <nav class="side" aria-label="按周目录">
+    <div class="brand">宋画阅读<small>2026 秋 · 阅读笔记工作台</small></div>
+    <ul class="weeks" id="weeks"></ul>
+    <div class="legend" aria-label="图例">
+      <span><i style="background:var(--res)"></i>研究：问题与方法</span>
+      <span><i style="background:var(--core)"></i>核心观点</span>
+      <span><i style="background:var(--def)"></i>定义与术语</span>
+      <span><i style="background:var(--con)"></i>结论与局限</span>
+      <span><i class="c-yellow"></i><i class="c-green"></i><i class="c-pink"></i>我的高亮</span>
+    </div>
+    <div class="save-state" id="saveState">载入中…</div>
+  </nav>
+
+  <main class="main">
+    <div class="col" id="col">
+
+<article class="reading" id="wang-intro" data-week="w-1019" data-title="导论 Introduction">
+  <header>
+    <div class="kicker">王正華《清明上河》· 导论</div>
+    <h1>导论<span class="en">Introduction</span></h1>
+    <div class="meta">
+      <div><b>作者</b>王正華 Wang Cheng-hua</div>
+      <div><b>出处</b><em>Up the River of Time: The Chinese Painting Tradition of Qingming Shanghe</em>，Harvard University Asia Center，2026，pp. 1–25</div>
+    </div>
+    <ul class="tags">
+      <li>画题 painting theme</li><li>主题传承</li><li>传统 tradition</li><li>伪作 forgery</li><li>苏州片</li><li>鉴定学</li><li>张彦远</li>
+    </ul>
+  </header>
+
+  <div class="article-body" data-hl-root>
+    <p>这是一本专著的导论，不是实证论文。它交代全书要回答什么问题、用什么材料、和哪些学术传统对话，并给出各章安排。下面仍按「研究问题、方法与材料、核心观点、结论」的顺序整理。</p>
+
+    <div class="box res">
+      <span class="lbl">研究 · 问题与方法</span>
+      <h3>研究问题</h3>
+      <p>一幅画怎样变成一个<strong>画题</strong>（<span class="en">painting theme</span>），也就是「从一到多」？「清明上河」这个名字从宋到清承载了哪些不同的意义？作者想看<strong>主题传承</strong>（<span class="en">thematic transmission</span>）能不能成为理解中国画传统的另一条线索，与传统上以画家和笔墨为主线的谱系叙事并列。</p>
+      <h3>材料</h3>
+      <ul>
+        <li>存世一百多件同名手卷，最早的是北宋张择端本，其余多作于晚明（约 1550 年代至 1644）到盛清（约 1680 年代至 1795）。</li>
+        <li>张择端本（北京故宫博物院）上金代到晚明的<strong>题跋</strong>（<span class="en">colophons</span>），用来重建它的接受史。</li>
+        <li>晚明到盛清的苏州作坊商业本，多托名张择端或仇英（约 1494 – 约 1552）。</li>
+        <li>1737 年完成的清院本。</li>
+      </ul>
+      <h3>方法</h3>
+      <p>作者不把张择端本当「原作」、其余当「衍生品」（<span class="en">derivatives</span>），而是把所有作品都当成同一画题的不同<strong>版本</strong>（<span class="en">versions</span>）。她以<strong>传统</strong>（<span class="en">tradition</span>）为概念框架，做长时段（<span class="en">longue durée</span>）、跨朝代、历时性（<span class="en">diachronic</span>）的研究。她不只看图像与物质本身，也看作品的「氛围」（<span class="en">ambience</span>）和<strong>可供性</strong>（<span class="en">affordances</span>），即关于它的名声、文字与传闻如何流通。</p>
+    </div>
+
+    <h2>核心观点</h2>
+
+    <div class="box core">
+      <span class="lbl">核心观点 1 · 名大于物</span>
+      <p>在明清，「清明上河」可以指一幅画、一类画、一个画题，乃至人们由经验和知识形成的心理图像。这个名字常常脱离具体作品，在文化想象（<span class="en">cultural imagining</span>）中自己生长。原作看不到，反而让名声借真假参半、甚至夸张想象的信息越传越广。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 2 · 数量引发质变</span>
+      <p>后期商业本最关键的特征是惊人的数量：<strong>数量引发质变</strong>（<span class="en">quantity triggered qualitative changes</span>）。它牵出三组问题：</p>
+      <ol>
+        <li><strong>艺术生产与收藏</strong>：收藏者罕见地横跨皇帝、精英文人和无名大众，构成分层的艺术市场。</li>
+        <li><strong>正典性与好古</strong>：以画题为基础的传统，挑战了以笔墨自我表现为正统的文人画边界（<span class="en">canonicity</span>）；后期版本的再创造也是一种好古（<span class="en">antiquarianism</span>）。</li>
+        <li><strong>图像与城市文化</strong>：「清明上河」直到晚明才被看作<strong>城市景观</strong>（<span class="en">cityscape</span>）。城门内的街景最能看出各代对城市文化的不同刻画。</li>
+      </ol>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 3 · 伪作值得研究</span>
+      <p>过去的伪作只在鉴定学（<span class="en">connoisseurship</span>）里出现，被揭穿后就被打入冷宫，鉴定是「赢家通吃」的游戏。作者借用 Christopher Wood 的<strong>替代性</strong>（<span class="en">substitutability</span>）和<strong>指涉的能动性</strong>（<span class="en">agency of reference</span>），认为后期版本可以在功能上充当原作，分享原作的身份与时间性。商业本处在高与低、真与伪、原作与复制之间的<strong>灰色地带</strong>（<span class="en">gray zone</span>）。原作的<strong>灵晕</strong>（<span class="en">aura</span>）没有因复制而消失，反而被加强甚至被创造出来。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 4 · 画题被谱系叙事忽视</span>
+      <p>中国画长时段叙事有两种模式：</p>
+      <ul>
+        <li><strong>线性演进</strong>：Loehr 提出从前再现、再现到超再现的分期；Cahill 改写为「历史 / 后历史」（<span class="en">history / post-history</span>），以元代为转折，并用「艺术史的艺术」（<span class="en">art-historical art</span>）和「连锁系列」（<span class="en">linked series</span>）描述明清画。</li>
+        <li><strong>画家与笔墨谱系</strong>：例如 Barnhart 用<strong>皴法</strong>（<span class="en">cunfa</span>, texture strokes）讨论董源一系的传承。</li>
+      </ul>
+      <p>作者重读张彦远《历代名画记》：其中没有目的论式的进化；推动变化的是大师；把各代画家连在一起的唯一线索是<strong>笔迹</strong>（<span class="en">bizong</span>），色彩和墨破都不算。无论张彦远还是 Cahill，都没有把<strong>画题</strong>当作分析范畴。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 5 · 画题有能动性</span>
+      <p>物有能动性（<span class="en">agency</span>）已是学界共识，但多来自物质属性。作者进一步主张<strong>画题的能动性</strong>（<span class="en">agency of theme</span>）：画题在物质上决定画面怎么配置，在概念上连接共享意象与修辞的诗文传统。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 6 · 传统的两张脸</span>
+      <p>一方面，作者认同传统是被发明、被再创造的，不神化起源；另一方面，她认为连续性不是现成的，需要严格考证。真正持续下来的线索是作品的形式与物质可供性，尤其是<strong>手卷格式</strong>和从郊野经河道到城市的<strong>三段式结构</strong>（<span class="en">tripartite structure</span>）。书名「上溯时间之河」既指回望起源，也指河流中有一组流动却可辨认的核心元素。</p>
+    </div>
+
+    <div class="box def">
+      <span class="lbl">定义与关键术语</span>
+      <dl class="terms">
+        <dt>画题 <span class="en">painting theme</span></dt><dd>由同一标题和若干可辨认特征维系的一类画，而不只是一件作品。</dd>
+        <dt>主题传承 <span class="en">thematic transmission</span></dt><dd>以画题而非画家或笔墨为线索的传统形成方式，是本书提出的核心概念。</dd>
+        <dt>伪作 <span class="en">forgery</span></dt><dd>作者以「意图欺骗」来界定。</dd>
+        <dt>苏州片 <span class="en">Suzhou pian</span></dt><dd>行内对明清苏州作坊托名古代名家所制伪画的统称，约 1875 年才见于文献。作者嫌其含混而避用。</dd>
+        <dt>替代性 <span class="en">substitutability</span></dt><dd>Christopher Wood 的概念：复制品作为同一类型链中的一环，可以代替原作行使其身份与权威。</dd>
+        <dt>可供性 <span class="en">affordance</span></dt><dd>作品的物质与形式特征让人得以与之互动、借之生成意义的潜能。</dd>
+        <dt>艺术史的艺术 <span class="en">art-historical art</span></dt><dd>Cahill 语：明清画家以前人风格而非自然为主题进行仿作，形成多条「连锁系列」。</dd>
+        <dt>皴法 <span class="en">cunfa, texture strokes</span></dt><dd>表现山石树木质感与体积的程式化笔法系统，12 世纪初起稳定出现在画论中。</dd>
+        <dt>笔迹 <span class="en">bizong</span></dt><dd>张彦远所说的「笔踪」，他认为没有笔迹就不成其为画。</dd>
+        <dt>画意 <span class="en">huayi, pictorial intent</span></dt><dd>北宋晚期形成的话语，使画题与标题成为文人文化资本的一部分（第七章展开）。</dd>
+      </dl>
+    </div>
+
+    <h2>重要例子</h2>
+    <div class="ex-group-title">开篇与名声</div>
+    <details class="ex"><summary>《红楼梦》大观园辨草名</summary><div class="ex-body"><p>宝玉说古书里的草名，后人不过是随便安在相像的植物上。作者借此引出全书的问题：名与物之间复杂而变动的对应关系。</p></div></details>
+    <details class="ex"><summary>「中国的蒙娜丽莎」</summary><div class="ex-body"><p>故宫每次展出，观众排队数小时只能看三分钟；2010 年上海世博会把它做成动态数字长卷。1950 年代起它被塑造成「人民的画」，作者要追问明清人透过什么眼光看它。</p></div></details>
+    <details class="ex"><summary>清院本（1737）</summary><div class="ex-body"><p>雍正下令绘制，乾隆朝完成并题诗，是一件作品承载两朝延续的文化议程的罕例。第六章讨论乾隆如何借它投射自己的宫廷画院构想。</p></div></details>
+
+    <div class="ex-group-title">商业本与苏州片</div>
+    <details class="ex"><summary>Whitfield（1965）与古原宏伸（1973）</summary><div class="ex-body"><p>两人都把商业本按图式分为三组，说明作坊用固定粉本反复、甚至无限次地生产以牟利。</p></div></details>
+    <details class="ex"><summary>2018 年台北故宫的苏州片展览</summary><div class="ex-body"><p>展出包括两卷清明上河图在内的伪画群组，把「伪画」变成超越真伪问题的严肃课题，也提出苏州片影响清宫、日韩绘画和欧洲中国风的问题。</p></div></details>
+    <details class="ex"><summary>疑为扬州所制的 18 世纪本</summary><div class="ex-body"><p>作者用它说明作坊伪画并不都出自苏州，这也是她避用「苏州片」一词的理由之一。</p></div></details>
+    <details class="ex"><summary>日本、朝鲜与欧洲的流传</summary><div class="ex-body"><p>日本自 17 世纪中叶传入，曾在外交场合展示，大概因为这个画题被视为理想城市的象征。18 世纪末一位朝鲜名士自称见过七本「仇英」本。梵蒂冈图书馆和大英博物馆也有藏本。</p></div></details>
+
+    <div class="ex-group-title">伪作研究的学术谱系</div>
+    <details class="ex"><summary>《溪岸图》争议（1999）</summary><div class="ex-body"><p>名家对断代的判断相差上千年，重挫了中国画鉴定学的威信，加上美国学界转向石窟与墓葬艺术，卷轴画研究陷入低谷。</p></div></details>
+    <details class="ex"><summary>Mark Jones 与 1990 年大英博物馆 <span class="en">Fake?</span> 展</summary><div class="ex-body"><p>他指出作伪未必为利，质量未必低劣，作伪者也可能是学者和鉴藏家。伪作可以反映一个时代的趣味与欲望。</p></div></details>
+    <details class="ex"><summary>柯律格 Clunas《长物》（<span class="en">Superfluous Things</span>）</summary><div class="ex-body"><p>他把晚明作伪与艺术商品市场的发展相连，让「真与伪」成为研究明清物质文化绕不开的二元范畴。</p></div></details>
+    <details class="ex"><summary>李惠仪 Wai-yee Li 论李渔《意中缘》</summary><div class="ex-body"><p>剧中的女伪作者与男画家借风格相近的画作彼此相知。仿作与伪作也可能是自我表达和情感沟通。</p></div></details>
+    <details class="ex"><summary>J. P. Park 论张泰阶伪造画录</summary><div class="ex-body"><p>张泰阶编造画录来为自己的伪画背书。在高低界线模糊的晚明，文化精英借伪造文本、画作和谱系来争夺身份。</p></div></details>
+    <details class="ex"><summary>Jonathan Hay：伪作如同墓葬的「虚拟现实」</summary><div class="ex-body"><p>Hay 把伪作视为一种艺术类型。作者不同意：伪作一旦被揭穿就失去灵晕，处境是「非此即彼」；而且这种类比低估了未被识破的伪作塑造现实的力量。</p></div></details>
+    <details class="ex"><summary>大芬村油画</summary><div class="ex-body"><p>1990 年代起约 8,000 名画工，每年生产约 500 万幅西方名画复制品，出口全球。这是与清明现象最惊人的当代平行例子，连跨国流通也相似。</p></div></details>
+
+    <div class="ex-group-title">谱系与传统</div>
+    <details class="ex"><summary>Cahill：王蒙与董其昌的青卞山图</summary><div class="ex-body"><p>董其昌借题识把自己接入董源、赵孟頫、王蒙一线，构成「连锁系列」。Cahill 只谈形式联系，没有讨论画题本身的作用。</p></div></details>
+    <details class="ex"><summary>张彦远「三古」之说</summary><div class="ex-body"><p>「上古之畫，迹簡意澹而雅正……中古之畫，細密精緻而臻麗……近代之畫，煥爛而求備。」Wen Fong 读作三阶段进化，作者认为这只是分期的风格概括，并不意味线性进步。</p></div></details>
+    <details class="ex"><summary>曹不兴至袁质的六代传承</summary><div class="ex-body"><p>曹不兴、卫协、顾恺之、陆探微、袁倩、袁质，前四人之间并无师徒关系，谱系是张彦远建构的，可能是通过观看作品来「学」。</p></div></details>
+    <details class="ex"><summary>「泼墨……亦不谓之画」与荆浩《笔法记》</summary><div class="ex-body"><p>张彦远贬低没有笔迹的泼墨；到 10 世纪初荆浩《笔法记》才主张笔与墨并重，因为山水画的空间需要墨的渲染。</p></div></details>
+
+    <div class="box con">
+      <span class="lbl">结论</span>
+      <p>作者的立场有三层：其一，后期版本不是原作的附庸，而是与原作一起构成一个画题传统；其二，画题和笔墨一样，可以作为中国画史的历时性动因，这正是传统史学与当代学界都忽视的；其三，重振对传统形成的研究并不等于回到崇拜传统，传承总是伴随着误解、误传和再创造。本书也不只是张择端本的接受史，而要把清明画题放进明清的城市化、商品化与宫廷艺术中去看。</p>
+      <h3>局限与可讨论之处 <span class="mine">（我的判断，非作者原话）</span></h3>
+      <ul>
+        <li>作者批评 Hay，认为伪作「非此即彼」（<span class="en">either/or</span>），自己却又强调真伪之间的灰色地带，两种说法有张力。</li>
+        <li>海外流传（日本、朝鲜、欧洲）只点到为止，没有展开。</li>
+        <li>她因定义含混避用「苏州片」，同时又认为大多数后期版本出自苏州作坊。</li>
+        <li>导论以学术史综述为主，具体论证要看后面各章。</li>
+      </ul>
+    </div>
+
+    <h2>全书结构</h2>
+    <ul>
+      <li><strong>第一章</strong>：北宋本的格式、结构与断代（12 世纪初），画中的母题传统，以及它在徽宗朝的位置。</li>
+      <li><strong>第二章</strong>：金、元、明题跋中的两种诠释，以及晚明的传奇化与《金瓶梅》的关联。</li>
+      <li><strong>第三章</strong>：16 世纪中叶苏州最早的后期版本，画题被定型为城市景观；附 21 个版本的 A–D 分组。</li>
+      <li><strong>第四章</strong>：晚明三类城市图，以及「进城」意象。</li>
+      <li><strong>第五章</strong>：作坊本作为商品，以及分层的艺术市场。</li>
+      <li><strong>第六章</strong>：清院本的戏剧性与观看性，以及雍正、乾隆的艺术议程。</li>
+      <li><strong>第七章</strong>：结论，讨论主题传承、「画意」与传统的物质和非物质两面。</li>
+    </ul>
+
+    <div class="summary">
+      <h2>总结</h2>
+      <p>导论的核心主张是：「清明上河」不只是一幅名画，而是一个画题，一个由一百多件同名作品、无数题跋传闻与文化想象共同构成的传统。作者把后期商业伪作从鉴定学的冷宫里请出来，借 Christopher Wood 的替代性概念，说明它们在明清可以充当原作，而原作的灵晕正是在复制中被加强的。她同时检讨中国画史以画家和笔墨为主线的谱系叙事，指出画题这一维度一直被忽视，并主张以手卷格式、三段式结构等可辨认的线索来考察传统如何在再创造中延续。读后面各章时，可以一直追问：每个历史时刻的人，看到的到底是哪一个「清明上河」？</p>
+    </div>
+  </div>
+
+  <section class="quiz" data-quiz-for="wang-intro" aria-labelledby="quiz-wang-intro"></section>
+
+  <section class="notes" aria-labelledby="notes-wang-intro">
+    <h2 id="notes-wang-intro">我的笔记</h2>
+    <textarea id="note-wang-intro" data-note-for="wang-intro" placeholder="写下你的想法、疑问和课堂讨论要点……"></textarea>
+    <p class="hint">笔记、高亮和备注都会自动保存。</p>
+    <ul class="hl-list" data-hl-list-for="wang-intro"></ul>
+  </section>
+</article>
+
+<article class="reading" id="wang-ch1" data-week="w-1019" data-title="第一章 The Painting">
+  <header>
+    <div class="kicker">王正華《清明上河》· 第一章</div>
+    <h1>第一章　画作<span class="en">Chapter 1: The Painting</span></h1>
+    <div class="meta">
+      <div><b>作者</b>王正華 Wang Cheng-hua</div>
+      <div><b>出处</b><em>Up the River of Time: The Chinese Painting Tradition of Qingming Shanghe</em>，Harvard University Asia Center，2026，pp. 27–62</div>
+    </div>
+    <ul class="tags">
+      <li>断代</li><li>手卷格式</li><li>多景 polyscenic</li><li>画题整合</li><li>虹桥</li><li>徽宗画院</li><li>互文阅读</li>
+    </ul>
+  </header>
+
+  <div class="article-body" data-hl-root>
+    <p>本章聚焦被认定为原作的张择端本（绢本设色，24.8 × 528 cm，北京故宫博物院）。这是中国艺术中被研究得最多的一幅画，断代、作者、画题、所画城市与季节都有争议。作者不打算逐一解开这些旧结，而是把画卷当作在特定绘画传统中、带着特定图像目标做出来的物质产品，从「何时、如何、为何」三方面重新看它。</p>
+
+    <div class="box res">
+      <span class="lbl">研究 · 问题与方法</span>
+      <h3>研究问题</h3>
+      <p>《清明上河图》作于何时？它整合了哪些绘画传统？它在徽宗朝宫廷里承担什么政治功能？</p>
+      <h3>方法</h3>
+      <ol>
+        <li><strong>批评两种历史学读法</strong>：一种按地理考证画中实景，一种把画当作北宋社会生活的直接记录。作者同意 Julia Murray 的批评：再逼真的描绘也有它的动机。</li>
+        <li><strong>看元特征</strong>（<span class="en">meta-features</span>）：断代不比对建筑细节，而看手卷怎样把多个场景串成整体（河流、山路），又怎样切换场景（分段重点、视角、框景）。这样就能把《清明》放进山水手卷的发展史里比较，而不只是和数量稀少的界画比。</li>
+        <li><strong>追溯画题传统</strong>：借郭若虚《图画见闻志》等文献，追溯乡村、城市、水运三个画题的来历与含义。</li>
+        <li><strong>互文阅读</strong>（<span class="en">intertextual reading</span>）：把《清明》与《听琴图》《千里江山图》等徽宗朝作品并读，补充只拿文献对应画中细节的情境阅读（<span class="en">contextual reading</span>）。</li>
+      </ol>
+    </div>
+
+    <h2>核心观点</h2>
+
+    <div class="box core">
+      <span class="lbl">核心观点 1 · 断代：12 世纪初的徽宗朝</span>
+      <ul>
+        <li><strong>细节比较</strong>：常被引来支持北宋早期说的《闸口盘车》《雪霁江行》，门窗浮雕画得真实立体；《清明》的门窗与船身却是程式化画法，说明它更晚，用的是成熟图式。开化寺壁画（约 1096）中的相似船只也不支持早期说。</li>
+        <li><strong>手卷格式的发展</strong>：10 世纪中到 11 世纪中的山水手卷，或是<strong>单景</strong>（<span class="en">monoscenic</span>），或用一条河统一全卷、空间<strong>同质</strong>（<span class="en">homogeneous</span>）。1080 年代以后才出现<strong>多景</strong>（<span class="en">polyscenic</span>）、空间<strong>异质</strong>（<span class="en">heterogeneous</span>）的构图，如郭熙、王诜。《清明》的三段转换比它们都复杂，所以更晚。</li>
+        <li><strong>风格线索</strong>：开篇的烟林近于赵令穰；枯枝笔法自由而有个人性，符合北宋晚期的抒情倾向；竹与湖石近于徽宗朝作品。画家基本不用界尺，又有诗意，应是受过文学训练的画院画家，而非普通界画工匠。</li>
+        <li><strong>宗教线索</strong>：画中有道士，也有僧人与佛寺；徽宗约在 1119–1120 年间废佛，所以作者推测画作于 <strong>1113–1119 年间</strong>。</li>
+      </ul>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 2 · 画的是平常的一天</span>
+      <p>画面没有节庆气氛，从南方远道而来的漕船已经聚在桥边，所以既不是清明节，也不是曹星原所说的汴河开航日。「清明」应取其古义，即<strong>政治清明</strong>、圣主治下的太平，是在称颂当朝。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 3 · 主题是水运，不是城市</span>
+      <p>全卷呈<strong>三段式结构</strong>：乡村、城郊、城内。城郊段最长，约占 40%；画中有 25 艘船；高潮在城门外的虹桥；城内一段很短。所以画的重心是汴河漕运：河养城，城是河存在的理由。针对 Valerie Hansen 的「泛指城市」说，作者认为画的就是开封，因为城门与官邸的建筑等级符合都城规制。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 4 · 整合多个老画题</span>
+      <p>《清明》在新兴的多景长卷里融合了几个由来已久的画题：开篇有<strong>平远</strong>（<span class="en">pingyuan</span>）的烟林，此外有乡村<strong>风俗</strong>（<span class="en">fengsu</span>）、城市和水运。「风俗」本来就与统治者端正民风的政治话语有关，水运画题则可以有寓意。北宋的新意在于把城市画成平民生活的地方，而不只是贵族车马的舞台。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 5 · 桥与门的象征层面</span>
+      <ul>
+        <li><strong>虹桥</strong>：无脚桥是 1030–40 年代的技术成就，但画中拱度陡得无法通行。这是有意的理想化，强化「虹」的祥瑞与仙境联想，正合徽宗对祥瑞之物的偏好。</li>
+        <li><strong>城门</strong>：同时画出正面与左侧面，现实中不可能一眼看到，是唐代就有的<strong>图式</strong>（<span class="en">schema</span>）。门楼上的鼓象征政治权威，骆驼队显示都城的四方来客。</li>
+        <li><strong>桥下险情</strong>：作者反驳曹星原、余辉的凶兆说，认为这是众人协力、即将化险为夷：桥左的大船已安然泊岸。宫廷画不太可能暗示衰世。</li>
+      </ul>
+      <p>「写实神话」常常遮蔽了画中的象征意义。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 6 · 徽宗朝的「三部曲」</span>
+      <p>《听琴图》、《清明上河图》、《千里江山图》各自对应徽宗治国的一个面向：君臣关系、政府管理漕运与维系京师、「天下」疆域。三幅的地理范围依次扩大（宫苑、京畿、江南乃至天下），共同投射政和年间（1111–1118）「<strong>丰亨豫大</strong>」的盛世形象。它们的手法都是<strong>准纪实</strong>（<span class="en">quasi-documentary</span>）：用逼真的细节和可辨认的现实经验营造真实感，为皇帝的政治讯息背书，模糊艺术再现与现实经验的界线。</p>
+    </div>
+
+    <div class="box def">
+      <span class="lbl">定义与关键术语</span>
+      <dl class="terms">
+        <dt>元特征 <span class="en">meta-features</span></dt><dd>跨越山水、风俗、界画类别的手卷构成要素：串联场景的元素（河流、山路），以及转换场景的手段（分段重点、视角、框景）。</dd>
+        <dt>单景 / 多景 <span class="en">monoscenic / polyscenic</span></dt><dd>全卷是一个整体构图，还是由多个可区分的场景组成。</dd>
+        <dt>同质 / 异质空间 <span class="en">homogeneous / heterogeneous space</span></dt><dd>全卷由同一种空间元素（如一条河）统一，还是由不同环境组成并有明确的过渡。</dd>
+        <dt>平远 <span class="en">pingyuan, level distance</span></dt><dd>以层层低平地形向远处退去、常以树木标示深度的山水构图原则，由李成推崇，郭熙称其「冲融而缥缥缈缈」。</dd>
+        <dt>风俗 <span class="en">fengsu, social customs</span></dt><dd>郭若虚列出的画题门类，与统治阶层观察、端正民风的儒家理念相关。</dd>
+        <dt>无脚桥 / 虹桥 <span class="en">wujiao qiao / hongqiao</span></dt><dd>不用桥柱的木构拱桥，1030 年代发明，1040 年代广设于汴河，以免急流中船只撞柱。</dd>
+        <dt>准纪实 <span class="en">quasi-documentary</span></dt><dd>以逼真细节制造「这是记录」的错觉，为政治讯息增加可信度。</dd>
+        <dt>丰亨豫大 <span class="en">fengheng yuda</span></dt><dd>1116 年徽宗宣称其治世已达「丰盛宏大」，成为大兴营建的政策依据。</dd>
+      </dl>
+    </div>
+
+    <h2>重要例子</h2>
+    <div class="ex-group-title">断代比较</div>
+    <details class="ex"><summary>《闸口盘车》《雪霁江行》</summary><div class="ex-body"><p>两者常被引来支持北宋早期说，作者却指出它们画酒楼和大船的方式与《清明》不同：前者重立体真实，后者是程式化图式，所以《清明》更晚。</p></div></details>
+    <details class="ex"><summary>燕文贵《江山楼观》、许道宁《渔舟唱晚》</summary><div class="ex-body"><p>单景构图，等于把立轴「由近而高」的构图横向铺开，最高峰居于中段，与同期「巨碑式山水」的整体世界观一致。</p></div></details>
+    <details class="ex"><summary>赵幹《江行初雪》、《河伯娶妇》</summary><div class="ex-body"><p>用一条河统一全卷，长达三四米，但没有场景转换，空间是同质的。</p></div></details>
+    <details class="ex"><summary>郭熙《树色平远》（1080 年代）</summary><div class="ex-body"><p>只有一米多长却有两景，渔夫对坐和老友赴亭两组「对偶」都寓离别与相会，说明多景不需要长度，而能承载细腻情感（Foong Ping 的读法）。</p></div></details>
+    <details class="ex"><summary>王诜《渔村小雪》</summary><div class="ex-body"><p>渔村、高士、关隘三景，关隘让人联想王维「西出阳关无故人」和李公麟《阳关图》。《清明》前两段的构图与它相似，但多了城市一段。</p></div></details>
+    <details class="ex"><summary>徽宗以诗句考画家</summary><div class="ex-body"><p>「野水无人渡，孤舟尽日横」这类诗句，可能启发了《清明》开头那条系得松松的空舟，体现北宋晚期山水的抒情倾向。</p></div></details>
+
+    <div class="ex-group-title">画题传统</div>
+    <details class="ex"><summary>展子虔《四载图》</summary><div class="ex-body"><p>徽宗原有三幅，费心集齐，最后一幅是《水行》。典出大禹乘四种交通工具亲近受苦的百姓，寓意圣王为民运粮，可能是《清明》的灵感来源。</p></div></details>
+    <details class="ex"><summary>《挽粮济水》</summary><div class="ex-body"><p>11 世纪初描绘济水运粮的画。当时政府疏浚了泛滥三十年的济水下游而备受称颂，可能是《清明》在北宋的先例。</p></div></details>
+    <details class="ex"><summary>燕文贵的海船图与汴京夜市图</summary><div class="ex-body"><p>一幅约 30 厘米的小画，画水手奋力掌舵，为富商所藏，让人想到《清明》的桥下高潮；已佚的汴京节日夜市图被一些学者认为与《清明》画题相近。</p></div></details>
+    <details class="ex"><summary>徽宗朝摹张萱《捣练图》</summary><div class="ex-body"><p>选取制衣的三个步骤，借文学传统寓宫女与忠臣盼君之情（Lara Blanchard），是徽宗画院改造旧画题的先例。</p></div></details>
+
+    <div class="ex-group-title">徽宗朝互文</div>
+    <details class="ex"><summary>《听琴图》</summary><div class="ex-body"><p>抚琴者是身着道服的徽宗本人，听者是两位着官服的大臣；茉莉、猴皮坐垫等贡品象征天命与富丽。作者推测作于 1113–1117 年间。</p></div></details>
+    <details class="ex"><summary>王希孟《千里江山图》</summary><div class="ex-body"><p>从雨雾中的城市剪影过渡到青绿仙境，寓「雨过天青」；1113 年蔡京跋记徽宗亲自指导少年画家。</p></div></details>
+    <details class="ex"><summary>1116 年为高丽使节布置的观画</summary><div class="ex-body"><p>15 卷画、2 册，分祥瑞、神仙境界、历史典范、田家四时四类，全是当朝画院作品，用来展示治世成就。《清明》的画题与「田家」一类相关。</p></div></details>
+    <details class="ex"><summary>《宣和睿览册》</summary><div class="ex-body"><p>一万多幅祥瑞图，主要供徽宗本人观赏，显示他享受这种自我颂扬。《五色鹦鹉》《祥龙石》《瑞鹤图》被认为原属此册。</p></div></details>
+
+    <div class="box con">
+      <span class="lbl">结论</span>
+      <p>《清明上河图》既不是画家灵感的偶然迸发，也不是某个政治事件的产物，更不是纪录片式的写实。它是 1110 年代徽宗画院的作品，在新兴的多景长卷格式里整合了乡村、城市、水运等旧画题，以汴河与开封这两个政治意涵浓厚的场所为舞台，描绘一幅理想化的京畿图景。虹桥、城门等象征元素与准纪实手法相配合，和《听琴图》《千里江山图》一起，为徽宗「丰亨豫大」的治世形象服务。现代学者把它当作北宋社会的忠实反映，恰恰可能是徽宗所预期和乐见的。</p>
+      <h3>局限与可讨论之处 <span class="mine">（我的判断，非作者原话）</span></h3>
+      <ul>
+        <li>1113–1119 的断代主要靠风格比较和宗教政策推断，作者自己也称之为「有根据的推测」，并承认无法确定三幅画的先后。</li>
+        <li>她批评曹星原、余辉过度诠释，但「三部曲」和吉祥寓意同样是诠释，也缺少直接的文献证据。</li>
+        <li>画家归属基本被搁置：张择端只见于张著 1186 年的一则题跋，作者认为知道名字对理解画帮助不大。</li>
+      </ul>
+    </div>
+
+    <div class="summary">
+      <h2>总结</h2>
+      <p>第一章用风格分析代替细节考证，为张择端本重新断代，并重新解读它的意义。作者从手卷格式的发展着眼，指出 10 世纪到 11 世纪中的山水手卷多为单景或空间同质，1080 年代后才出现多景、异质的构图；《清明》的三段式转换更为复杂，加上笔法、母题和宗教线索，应作于徽宗朝的 1113–1119 年间。画中是平常的一天而非节日，主题是汴河漕运而非城市，并整合了平远、风俗、城市、水运等旧画题。虹桥的夸张拱度和城门的图式化处理都揭示了画中的象征层面，桥下险情寓意同舟共济、化险为夷。与《听琴图》《千里江山图》并读，三幅画构成徽宗「丰亨豫大」政治议程的视觉表达。这为导论所说的「起源」提供了第一层内容：后来所有的「清明上河」，都要回溯到这样一件本身就充满建构的宫廷作品。</p>
+    </div>
+  </div>
+
+  <section class="quiz" data-quiz-for="wang-ch1" aria-labelledby="quiz-wang-ch1"></section>
+
+  <section class="notes" aria-labelledby="notes-wang-ch1">
+    <h2 id="notes-wang-ch1">我的笔记</h2>
+    <textarea id="note-wang-ch1" data-note-for="wang-ch1" placeholder="写下你的想法、疑问和课堂讨论要点……"></textarea>
+    <p class="hint">笔记、高亮和备注都会自动保存。</p>
+    <ul class="hl-list" data-hl-list-for="wang-ch1"></ul>
+  </section>
+</article>
+
+<article class="reading" id="wang-ch2" data-week="w-1019" data-title="第二章 The Aftermath">
+  <header>
+    <div class="kicker">王正華《清明上河》· 第二章</div>
+    <h1>第二章　身后<span class="en">Chapter 2: The Aftermath</span></h1>
+    <div class="meta">
+      <div><b>作者</b>王正華 Wang Cheng-hua</div>
+      <div><b>出处</b><em>Up the River of Time: The Chinese Painting Tradition of Qingming Shanghe</em>，Harvard University Asia Center，2026，pp. 63–82</div>
+    </div>
+    <ul class="tags">
+      <li>题跋 colophons</li><li>接受史</li><li>故都 / 祖都</li><li>废都书写</li><li>风俗细节</li><li>严嵩</li><li>《金瓶梅》</li>
+    </ul>
+  </header>
+
+  <div class="article-body" data-hl-root>
+    <p>1127 年北宋灭亡，张择端本由此开始了中国卷轴画中最曲折的身后史。第三章要讨论晚明如何把它变成一个画题，本章则先追溯画作本身的流传与接受：它卷后的十四段题跋告诉我们什么？作者处理三个问题：金代题跋者怎样看这幅画，元到明的看法怎样变化，以及它在晚明怎样成为传奇。</p>
+
+    <div class="box res">
+      <span class="lbl">研究 · 问题与方法</span>
+      <h3>研究问题</h3>
+      <p>后人怎样观看、诠释《清明上河图》？这些诠释如何成为它的遗产，并为它后来变成画题铺路？</p>
+      <h3>材料</h3>
+      <ul>
+        <li>卷后十四段<strong>题跋</strong>（<span class="en">colophons</span>），出自十三位作者，跨越 12 世纪末到 17 世纪的四百多年：金代五段，元代三段，明代五段，明清之际一段。</li>
+        <li>印章、题跋作者的传记、地方志，以及明清笔记中关于此画的传闻。</li>
+      </ul>
+      <h3>方法</h3>
+      <p>作者不满足于整理「谁收藏过、谁看过」的流传事实，而是把每段题跋放回作者的身份、处境与文学传统里，问他们为什么这样看。题跋既被当作接受史的证据，也被当作受文学套语塑造的文本来分析。</p>
+    </div>
+
+    <h2>核心观点</h2>
+
+    <div class="box core">
+      <span class="lbl">核心观点 1 · 金代题跋：开封成为「祖都」</span>
+      <p>张公药、郦权、王磵三位金代文人是朋友，大约在 1170–80 年代于开封一带同观此画，各题诗作。他们用<strong>废都</strong>的文学套语，如「丘墟」、「禾黍」、「繁华梦」，以及老子「戒盈满」，把画中盛景与开封的衰败对照，借画感叹王朝兴亡。</p>
+      <p>可是当时的开封并不荒废：1153 年它成为金的南京（陪都），大兴土木，1214–1234 年间更成为金的都城。诗人眼中的废墟来自文学传统，而不是亲眼所见。借 Stephen Owen 的话说，文化记忆会「压迫」现实，而进入这个传统，也给了二流诗人发言的位置。</p>
+      <p>结果是开封被冻结在徽宗时代，成为他们的<strong>祖都</strong>（<span class="en">ancestral capital</span>）：祖辈曾属于、自己却永远失去的政治与文化归属。讽刺的是，他们的家族恰恰受益于改朝换代，本人也仕于金朝。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 2 · 画比废墟更有力的「指涉能动性」</span>
+      <p>与废墟、残石不同，画作不附着于某地，也从来不是城市的一部分，却能整体呈现徽宗时代的开封，给观者一种替代性的经验（<span class="en">vicarious experience</span>）。这种<strong>指涉的能动性</strong>（<span class="en">agency of referentiality</span>）比瓦砾更有权威，让「过去的开封长什么样」显得真切。展开画卷，就唤起北宋盛世及其命运。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 3 · 徽宗遗产在金与南宋的两种处理</span>
+      <ul>
+        <li><strong>金</strong>：朝廷从一开始就把北宋衰亡归咎于徽宗昏庸和蔡京党争，郦权诗「至今遗老空垂泪，犹恨宣和与政和」与此呼应。金章宗又以徽宗的艺术事业为正统帝王的典范：仿其收藏钤印制度，书法学徽宗几可乱真，以此自居北宋的合法继承者。</li>
+        <li><strong>南宋</strong>：徽宗是本朝先帝，不能直接指责，于是把罪责推给蔡京等「奸臣」。开封成为女真摧毁一个政治文化共同体的转喻（Ari Levine）。</li>
+      </ul>
+      <p>在金代汉人士大夫那里，族群并不是关键因素：怀念「祖都」与效忠金朝并不冲突。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 4 · 元明题跋：风俗细节变得「可见」</span>
+      <p>金代题跋者离亡国太近，画中的视觉细节被「历史的浓雾」遮住了。两百多年后，元明题跋开出了第二种诠释：重视画中的<strong>风俗细节</strong>（<span class="en">genre details</span>）与描绘性，按字面而非象征来读。</p>
+      <ul>
+        <li>兴亡的读法仍在延续，但不再激愤。李祁（1365）把画读作给后世君臣的鉴戒；杨准（1352）冷静地叙述开封兴废，同时开始逐项罗列画中景物。</li>
+        <li>刘汉（1354）把画拆成「市桥」、「郭径」、「舟车」、「邑屋」等独立母题。</li>
+        <li>李东阳（1491、1515）走得最远：把人物分作「官士农贾医卜佛道胥隶篙师缆夫妇女臧获」，把动作分作行、坐、授、受、问答、呼应，形成一种<strong>非结构的清单式阅读</strong>，不再把桥下视为高潮。他还最早提到清明节，但只是顺带一提。</li>
+      </ul>
+      <p>李东阳甚至写进画中没有的东西（「万方玉帛梯航随」、根本不存在的各种山）。这些文字清单后来成了晚明画家在看不到原作时制作后期版本的依据。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 5 · 晚明成为传奇</span>
+      <p>此画的经历本身就很戏剧化：元初宫中被装裱匠以摹本调包（杨准自述）；明代先后归苏州一带的陆完、顾氏，再以 1,200 两银子转入严嵩之手；1565 年严家被抄，画回到内府。藏家接连遭难：陆完被贬死于福建，严嵩父子倒台，于是有「尤物害民」之叹。</p>
+      <p>真实事件、误传与谣言交织成一张「想象之网」，作者比作今天网上的病毒式内容：严家索画，王忬献上黄彪画的摹本，被装裱匠汤氏揭穿，王忬因此被杀，其子王世贞写《金瓶梅》讽刺严世蕃。作者考证，王家其实从未收藏或进献此画，王世贞也不太可能是《金瓶梅》的作者，但这些故事大大提高了画作的社会能见度。此后两百年私人藏家几乎不留痕迹，似乎畏惧它招祸；1799 年又因抄家入清宫，那时乾隆已经去世，它只被例行登记。</p>
+    </div>
+
+    <div class="box core">
+      <span class="lbl">核心观点 6 · 画与《金瓶梅》的两重关联</span>
+      <ol>
+        <li><strong>时空框架相同</strong>：小说设在徽宗朝，写都市繁华与奢靡，主角最终死于纵欲，一切归于毁灭，正合题跋中盛极而衰的读法。小说里的城市名「清河」，读来几乎就是「清明上河」的简称。</li>
+        <li><strong>清单式的书写</strong>：从杨准到李东阳的罗列，与小说中逐项铺陈衣饰器物的新文体（大木康）相通；严家的抄家清单《天水冰山录》可能也是这种文体的来源之一。</li>
+      </ol>
+      <p>作者无意证明这幅画「影响」了小说，而是说明：如果有哪幅画会被编进《金瓶梅》的成书传说，必然是它。</p>
+    </div>
+
+    <div class="box def">
+      <span class="lbl">定义与关键术语</span>
+      <dl class="terms">
+        <dt>题跋 <span class="en">colophon</span></dt><dd>书写在画卷后（或画心外）的观后题记、诗文，是重建接受史最直接的材料。</dd>
+        <dt>时空体 <span class="en">chronotope</span></dt><dd>作者借用的概念，指被文学化、凝固成特定时间与空间组合的城市形象，例如「徽宗时代的开封」。</dd>
+        <dt>祖都 <span class="en">ancestral capital</span></dt><dd>金代汉人士大夫笔下的开封：祖辈所属、自己已永远失去的政治与文化归属，被冻结在最辉煌的时刻。</dd>
+        <dt>丘墟、禾黍 <span class="en">qiu &amp; xu; heshu</span></dt><dd>废都书写的套语：丘为瓦砾土丘，墟为空无；禾黍指宫阙化为农田、荒无人烟。</dd>
+        <dt>指涉的能动性 <span class="en">agency of referentiality</span></dt><dd>图像代表过去、产生「真实效果」并唤起历史记忆的力量。</dd>
+        <dt>风俗细节 <span class="en">genre details</span></dt><dd>画中日常生活的具体人物、器物与活动，元明题跋者开始专注于此。</dd>
+        <dt>荫 <span class="en">yin</span></dt><dd>因祖辈功劳而授予子孙官职的恩荫制度，张公药借此入仕金朝。</dd>
+        <dt>尤物害民</dt><dd>16 世纪末文人的感叹：珍贵之物给拥有者招来灾祸。</dd>
+      </dl>
+    </div>
+
+    <h2>重要例子</h2>
+    <div class="ex-group-title">金代题跋</div>
+    <details class="ex"><summary>张著题跋（1186）</summary><div class="ex-body"><p>现列第一，却可能写得比三友诗晚，后来才移到卷首。写法像一份画家简介式的藏品登录，这位饱受讥评的诗人以鉴赏见长，1205 年获金章宗任命掌管内府书画。画大概在 1186 年前不久从开封运到燕京。</p></div></details>
+    <details class="ex"><summary>张公药三首诗</summary><div class="ex-body"><p>「通衢车马正喧阗，只是宣和第几年」点出徽宗末年；「老氏从来戒盈满，故知今日变丘墟」以兴亡收束；末以「唤回一饷繁华梦」把画中景象写成一场梦。</p></div></details>
+    <details class="ex"><summary>郦权：「犹恨宣和与政和」</summary><div class="ex-body"><p>三人中最激愤，直斥徽宗，甚至把画中漕船与「花石纲」联系起来，视为宣和、政和年间的奢靡。作者推测这或与他屡次求荫不得、仕途失意有关。</p></div></details>
+    <details class="ex"><summary>张公药与郦权的家族</summary><div class="ex-body"><p>张的祖父历仕北宋、伪齐、金三朝，一位叔父投奔南宋；郦的父亲先后效忠北宋、南宋、伪齐和金。他们是金治下第二代汉人，靠父祖辈的故事间接经历了亡国。</p></div></details>
+    <details class="ex"><summary>范成大使金诗（约 1170）</summary><div class="ex-body"><p>南宋使臣笔下的开封父老仍心向宋室、盼王师北还，现代研究认为这是他的一厢情愿。与郦权的「遗老垂泪」对照，可以看出南北两方对开封的不同想象。</p></div></details>
+
+    <div class="ex-group-title">元明题跋</div>
+    <details class="ex"><summary>李祁「不二心老人」（1365）</summary><div class="ex-body"><p>他效忠覆亡的元朝、隐居不仕，在画上钤「不二心老人」印。他把画读作王朝天命骤失的鉴戒，正合他的遗民立场。</p></div></details>
+    <details class="ex"><summary>杨准的长跋（1352）</summary><div class="ex-body"><p>他倾囊购得此画，记下元初装裱匠以摹本调包的传闻，并列举「城郭市桥屋庐之远近高下，草树马牛驴驼之大小出没……」，总结为「盖汴京盛时伟观也」。</p></div></details>
+    <details class="ex"><summary>刘汉题跋（1354）</summary><div class="ex-body"><p>在杨准处观画，把画面拆成市桥、郭径、舟车、邑屋等独立母题，只列举不解释。</p></div></details>
+    <details class="ex"><summary>李东阳两跋（1491、1515）</summary><div class="ex-body"><p>人物与动作的分类清单，以及「牵重舟溯急流」「驻足而旁观」「交欢助叫」等描写；又有想象出来的「万方玉帛梯航随」「百货千商集成蚁」，以及画中根本没有的山。</p></div></details>
+
+    <div class="ex-group-title">晚明传奇</div>
+    <details class="ex"><summary>陆完与顾氏</summary><div class="ex-body"><p>陆完 1524 年于福建贬所题跋，两年后去世；其子家道中落，把画抵押给顾家。后来有人花 1,200 两银子从顾家买下献给严嵩，使它成为当时最昂贵的艺术品之一。</p></div></details>
+    <details class="ex"><summary>严嵩、王忬、王世贞与《金瓶梅》传说</summary><div class="ex-body"><p>传说王忬以摹本冒充真迹献给严嵩，被揭穿后遭害，王世贞写《金瓶梅》报复。作者指出献画者并非王忬，王世贞也不太可能是小说作者，但严嵩确实牵涉王忬之死。</p></div></details>
+    <details class="ex"><summary>装裱匠汤氏与画家黄彪</summary><div class="ex-body"><p>都是史有其人的苏州人，一个揭穿骗局，一个受托摹画。传说把清明摹本的制作地指向苏州，为后面各章埋下伏笔。</p></div></details>
+    <details class="ex"><summary>潘金莲的生日装束</summary><div class="ex-body"><p>「香色潞紬雁啣芦花样对衿袄儿，白绫竖领……」大木康认为这种逐项铺陈读来像商品目录，与《天水冰山录》的分类登录相通。</p></div></details>
+    <details class="ex"><summary>1799 年入清宫</summary><div class="ex-body"><p>在私人手中沉寂约两百年（1582–1799），最后因抄家入宫。乾隆已于此前去世，这幅画没有得到他的题咏钤印，只被例行登录，作者说「它已经有过它的时刻」。</p></div></details>
+
+    <div class="box con">
+      <span class="lbl">结论</span>
+      <p>题跋显示，《清明上河图》的身后史形成了两种主要的诠释，并都成为它的遗产。其一是金代确立的象征读法：画中的开封是盛极而衰的「祖都」，是王朝兴亡的鉴戒。其二是元明发展出来的字面读法：画是日常生活风俗细节的万花筒，可以逐项罗列、玩味。到了晚明，画作的高价、曲折的流传和藏家的厄运，加上与《金瓶梅》的传说纠缠，使它成为家喻户晓的传奇之物。正是这种名声，而不是原作本身，为下一章要讨论的大量后期版本的出现准备了条件。</p>
+      <h3>局限与可讨论之处 <span class="mine">（我的判断，非作者原话）</span></h3>
+      <ul>
+        <li>题跋只代表少数精英观者，而且受文学套语支配，作者自己也指出它们不反映现实。用它们代表「各时代怎样看」需要谨慎。</li>
+        <li>郦权的激愤与仕途失意之间的联系，是作者的推测。</li>
+        <li>与《金瓶梅》的两点关联（「清河」之名、清单式文体）属于类比，而非影响关系，作者也明说不主张影响。</li>
+      </ul>
+    </div>
+
+    <div class="summary">
+      <h2>总结</h2>
+      <p>第二章通过十四段题跋重建张择端本的接受史。金代的张公药、郦权、王磵借废都套语，把画中的开封写成冻结在徽宗时代的「祖都」，抒发兴亡之感，尽管当时的开封正是金的陪都乃至都城。画作比废墟更能代表过去，这种指涉的能动性让它成为记忆的媒介。元明之际，亡国的创痛远去，杨准、刘汉、李东阳开始逐项罗列画中景物，形成重视风俗细节、清单式的阅读，甚至写进画中没有的东西，为后来的仿作提供了文字蓝本。晚明时，严嵩抄家、装裱匠调包、王世贞复仇与《金瓶梅》等真假参半的故事，使此画成为传奇。这印证了导论的观点：「清明上河」的名声在很大程度上来自看不到原作时流传的信息。</p>
+    </div>
+  </div>
+
+  <section class="quiz" data-quiz-for="wang-ch2" aria-labelledby="quiz-wang-ch2"></section>
+
+  <section class="notes" aria-labelledby="notes-wang-ch2">
+    <h2 id="notes-wang-ch2">我的笔记</h2>
+    <textarea id="note-wang-ch2" data-note-for="wang-ch2" placeholder="写下你的想法、疑问和课堂讨论要点……"></textarea>
+    <p class="hint">笔记、高亮和备注都会自动保存。</p>
+    <ul class="hl-list" data-hl-list-for="wang-ch2"></ul>
+  </section>
+</article>
+
+
+
+    </div>
+  </main>
+</div>
+
+<div class="menu" id="menu" hidden role="dialog" aria-label="标注"></div>
+
+<script>
+(function () {
+  "use strict";
+  const menu = document.getElementById("menu");
+  let pending = null; // {aid, start, end, text}  for a fresh selection
+  let activeId = null, activeAid = null;
+
+  /* ---------- Weeks / TOC ---------- */
+  const WEEKS = [
+    { id: "w-1019", label: "10 月 19 日这周", title: "王正華《清明上河》",
+      items: [
+        { id: "wang-intro", title: "导论 Introduction" },
+        { id: "wang-ch1", title: "第一章 The Painting" },
+        { id: "wang-ch2", title: "第二章 The Aftermath" }
+      ] }
+  ];
+  const weeksEl = document.getElementById("weeks");
+  const weekHead = document.createElement("div");
+  weekHead.className = "week-head";
+  document.getElementById("col").prepend(weekHead);
+
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  WEEKS.forEach(function (w) {
+    const li = document.createElement("li");
+    li.className = "week"; li.dataset.week = w.id;
+    const b = document.createElement("button");
+    b.className = "week-btn"; b.type = "button";
+    b.innerHTML = '<span class="wk"></span><span class="wt"></span>';
+    b.querySelector(".wk").textContent = w.label;
+    b.querySelector(".wt").textContent = w.title;
+    b.addEventListener("click", function () { showWeek(w.id); });
+    const ul = document.createElement("ul");
+    ul.className = "week-items";
+    w.items.forEach(function (it) {
+      const i = document.createElement("li");
+      if (it.pending) { i.className = "pending"; i.textContent = it.title; }
+      else {
+        const a = document.createElement("a");
+        a.href = "#" + it.id; a.textContent = it.title;
+        a.addEventListener("click", function (e) {
+          e.preventDefault(); showWeek(w.id);
+          const t = document.getElementById(it.id);
+          if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        i.appendChild(a);
+      }
+      ul.appendChild(i);
+    });
+    li.appendChild(b); li.appendChild(ul);
+    weeksEl.appendChild(li);
+  });
+
+  function showWeek(id) {
+    document.querySelectorAll(".week").forEach(function (el) { el.setAttribute("aria-current", el.dataset.week === id ? "true" : "false"); });
+    document.querySelectorAll("article.reading").forEach(function (a) { a.hidden = a.dataset.week !== id; });
+    const w = WEEKS.find(function (x) { return x.id === id; });
+    weekHead.textContent = w ? (w.label + " · " + w.title) : "";
+    lsSet("sh-week", id);
+    hideMenu();
+  }
+  const savedWeek = lsGet("sh-week");
+  showWeek(WEEKS.some(function (w) { return w.id === savedWeek; }) ? savedWeek : WEEKS[WEEKS.length - 1].id);
+
+  /* ---------- State ---------- */
+  // state[articleId] = { highlights: [{id,start,end,text,color,note}], note: "" }
+  const state = {};
+  document.querySelectorAll("article.reading").forEach(function (a) {
+    let s = null;
+    try { s = JSON.parse(lsGet("sh-art-" + a.id) || "null"); } catch (e) {}
+    state[a.id] = normalize(s);
+  });
+  function normalize(s) {
+    s = s && typeof s === "object" ? s : {};
+    return { highlights: Array.isArray(s.highlights) ? s.highlights.filter(function (h) { return h && typeof h.start === "number"; }) : [], note: typeof s.note === "string" ? s.note : "", quiz: (s.quiz && typeof s.quiz === "object" && s.quiz.picks && typeof s.quiz.picks === "object") ? { picks: s.quiz.picks, done: !!s.quiz.done } : { picks: {}, done: false }, updatedAt: s.updatedAt || 0 };
+  }
+
+  const saveStateEl = document.getElementById("saveState");
+  let db = null, uid = null;
+  const timers = {};
+  const writing = {};
+  function setSaveText(t) { saveStateEl.textContent = t; }
+
+  function persist(aid) {
+    state[aid].updatedAt = Date.now();
+    lsSet("sh-art-" + aid, JSON.stringify(state[aid]));
+    clearTimeout(timers[aid]);
+    setSaveText(db ? "保存中…" : "已保存在本浏览器");
+    timers[aid] = setTimeout(function () { pushRemote(aid); }, 700);
+  }
+  async function pushRemote(aid) {
+    if (!db || !uid) return;
+    if (writing[aid]) { timers[aid] = setTimeout(function () { pushRemote(aid); }, 400); return; }
+    writing[aid] = true;
+    try {
+      await db.collection("data/users/" + uid).doc(aid).set(JSON.parse(JSON.stringify(state[aid])));
+      setSaveText("已自动保存");
+    } catch (e) {
+      setSaveText("云端保存失败，已暂存在本浏览器");
+    } finally { writing[aid] = false; }
+  }
+
+  /* ---------- Text offsets ---------- */
+  function textNodes(root) {
+    const out = [];
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    let n; while ((n = w.nextNode())) out.push(n);
+    return out;
+  }
+  function offsetOf(root, node, off) {
+    if (node.nodeType !== 3) {
+      // element boundary: count text before the child at `off`
+      const r = document.createRange();
+      r.setStart(root, 0); r.setEnd(node, off);
+      return r.toString().length;
+    }
+    let total = 0;
+    for (const t of textNodes(root)) { if (t === node) return total + off; total += t.nodeValue.length; }
+    return total;
+  }
+  function fullText(root) { return textNodes(root).map(function (t) { return t.nodeValue; }).join(""); }
+
+  function wrapRange(root, h) {
+    let pos = 0;
+    const targets = [];
+    for (const t of textNodes(root)) {
+      const len = t.nodeValue.length, s = pos, e = pos + len;
+      pos = e;
+      if (e <= h.start || s >= h.end) continue;
+      targets.push({ t: t, a: Math.max(0, h.start - s), b: Math.min(len, h.end - s) });
+    }
+    targets.forEach(function (x) {
+      let node = x.t;
+      if (!node.nodeValue.slice(x.a, x.b).trim()) return;
+      if (x.b < node.nodeValue.length) node.splitText(x.b);
+      if (x.a > 0) node = node.splitText(x.a);
+      const m = document.createElement("mark");
+      m.className = "hl " + h.color + (h.note ? " has-note" : "");
+      m.dataset.id = h.id;
+      if (h.note) m.title = h.note;
+      node.parentNode.insertBefore(m, node);
+      m.appendChild(node);
+    });
+  }
+
+  function relocate(root, h) {
+    // if the text moved (page content edited), find the saved quote again
+    const txt = fullText(root);
+    if (txt.slice(h.start, h.end) === h.text) return true;
+    const i = txt.indexOf(h.text);
+    if (i < 0 || !h.text) return false;
+    h.start = i; h.end = i + h.text.length;
+    return true;
+  }
+
+  function render(aid) {
+    const art = document.getElementById(aid);
+    if (!art) return;
+    const root = art.querySelector("[data-hl-root]");
+    root.querySelectorAll("mark.hl").forEach(function (m) {
+      const p = m.parentNode;
+      while (m.firstChild) p.insertBefore(m.firstChild, m);
+      p.removeChild(m);
+    });
+    root.normalize();
+    const hs = state[aid].highlights.slice().sort(function (a, b) { return a.start - b.start; });
+    hs.forEach(function (h) { if (relocate(root, h)) wrapRange(root, h); });
+    const ta = art.querySelector("textarea[data-note-for]");
+    if (ta && document.activeElement !== ta) ta.value = state[aid].note;
+    renderList(aid);
+    if (typeof renderQuiz === "function") renderQuiz(aid);
+  }
+
+  function renderList(aid) {
+    const ul = document.querySelector('[data-hl-list-for="' + aid + '"]');
+    if (!ul) return;
+    ul.textContent = "";
+    state[aid].highlights.slice().sort(function (a, b) { return a.start - b.start; }).forEach(function (h) {
+      const li = document.createElement("li");
+      const dot = document.createElement("span"); dot.className = "dot c-" + h.color;
+      const body = document.createElement("div");
+      const q = document.createElement("q"); q.textContent = h.text.length > 120 ? h.text.slice(0, 120) + "…" : h.text;
+      body.appendChild(q);
+      if (h.note) { const n = document.createElement("span"); n.className = "n"; n.textContent = h.note; body.appendChild(n); }
+      li.appendChild(dot); li.appendChild(body);
+      li.addEventListener("click", function () {
+        const m = document.querySelector('mark.hl[data-id="' + h.id + '"]');
+        if (!m) return;
+        const d = m.closest("details"); if (d) d.open = true;
+        m.scrollIntoView({ behavior: "smooth", block: "center" });
+        document.querySelectorAll('mark.hl[data-id="' + h.id + '"]').forEach(function (x) { x.classList.add("flash"); setTimeout(function () { x.classList.remove("flash"); }, 1200); });
+      });
+      ul.appendChild(li);
+    });
+  }
+
+  Object.keys(state).forEach(render);
+
+  /* ---------- Notes textareas ---------- */
+  document.querySelectorAll("textarea[data-note-for]").forEach(function (ta) {
+    ta.addEventListener("input", function () {
+      const aid = ta.dataset.noteFor;
+      state[aid].note = ta.value;
+      persist(aid);
+    });
+  });
+
+  /* ---------- Quizzes ---------- */
+  var QUIZ = {
+    "wang-intro": [
+      { q: "作者认为后期商业本最关键、「引发质变」的特征是什么？", o: ["技法可比宋本", "惊人的数量", "都是仇英亲笔", "都流传到海外"], a: 1,
+        why: "作者说商业本论质量比不上宋本和清院本，它们重要恰在数量太多：quantity triggered qualitative changes。正因为多，才牵出跨阶层收藏、画题能否成为正典、城市景观兴起这三组问题。" },
+      { q: "作者如何解读张彦远「上古、中古、近代」之说？", o: ["只是不同时期风格的概括，不意味线性进步", "证明中国早有目的论式的进化史观", "说明画题是连接画家的主线", "说明色彩是传统的核心"], a: 0,
+        why: "B 是 Wen Fong 的读法，作者正是在反驳它。她认为张彦远只是分别概括三期风格，并不意味越晚越好，所以他会称上古「迹简意澹而雅正」，又批评当时的画「混乱无旨」。" },
+      { q: "说明「后期版本可以充当原作」时，作者借用了 Christopher Wood 的哪个概念？", o: ["灵晕 aura", "后历史 post-history", "替代性 substitutability", "艺术史的艺术 art-historical art"], a: 2,
+        why: "替代性：复制品作为同一类型链中的一环，可以代替原作，分享原作的身份、效力与权威。aura 是本雅明的概念，后两个是 Cahill 的。" }
+    ],
+    "wang-ch1": [
+      { q: "作者推测《清明上河图》最可能作于什么时候？", o: ["11 世纪初宋真宗朝", "1070 年代末宋神宗朝", "1113–1119 年间徽宗朝", "1120 年以后北宋将亡之际"], a: 2,
+        why: "依据是手卷格式从单景走向多景的发展、与赵令穰和徽宗朝作品相近的笔法与母题，以及画中出现佛寺和僧人（徽宗约 1119–1120 年废佛）。B 是曹星原的说法。" },
+      { q: "关于虹桥下船只遇险的场景，作者的解读是：", o: ["表现众人协力、化险为夷，寓意太平", "暗示北宋政权即将覆亡", "纪实描绘汴河开航日的混乱", "讽刺漕运管理不善"], a: 0,
+        why: "作者反驳曹星原、余辉的凶兆说：桥左的大船已安然泊岸，暗示险情即将解除；宫廷画也不太可能暗示衰世。寓意是同舟共济、化险为夷。" },
+      { q: "作者所说的徽宗朝「三部曲」不包括哪一幅？", o: ["《听琴图》", "《千里江山图》", "《清明上河图》", "《雪霁江行图》"], a: 3,
+        why: "三部曲是《听琴图》（君臣）、《清明上河图》（漕运与京师）、《千里江山图》（天下疆域），地理范围依次扩大。《雪霁江行图》是断代比较时用的早期作品。" }
+    ],
+    "wang-ch2": [
+      { q: "金代张公药、郦权、王磵的题跋把开封写成了什么？", o: ["金朝蒸蒸日上的陪都", "冻结在徽宗时代的「祖都」", "商旅辐辏的商业中心", "南宋必将收复的失地"], a: 1,
+        why: "他们用丘墟、禾黍、繁华梦等废都套语，把开封写成祖辈所属、自己已永远失去的「祖都」，尽管当时开封其实是金的陪都，后来还成为都城。D 更接近南宋范成大一方的想象。" },
+      { q: "元明题跋开出的新读法是：", o: ["把桥下险情当作全卷高潮", "考证画中的具体地理位置", "把画读作清明节的节俗图", "专注于风俗细节，逐项罗列画中景物"], a: 3,
+        why: "杨准、刘汉、李东阳把画拆成母题与分类清单来玩味。李东阳虽然最早提到清明节，但只是顺带一提，他也不把桥下当作高潮。" },
+      { q: "下列哪一项不是此画在晚明成为传奇的因素？", o: ["严嵩父子倒台、画被抄入内府", "装裱匠以摹本调包的故事", "乾隆皇帝的大量题咏钤印", "与《金瓶梅》成书传说的纠缠"], a: 2,
+        why: "乾隆在晚明之后，而且此画 1799 年入清宫时乾隆已经去世，没有得到他的题咏，只被例行登录。另外三项都是作者讨论的传奇成因。" }
+    ]
+  };
+  var LETTERS = ["A", "B", "C", "D"];
+
+  function renderQuiz(aid) {
+    const box = document.querySelector('[data-quiz-for="' + aid + '"]');
+    const qs = QUIZ && QUIZ[aid];
+    if (!box || !qs) return;
+    const st = state[aid].quiz;
+    box.textContent = "";
+    const h = document.createElement("h2"); h.id = "quiz-" + aid; h.textContent = "自测题"; box.appendChild(h);
+    const sub = document.createElement("p"); sub.className = "sub";
+    sub.textContent = st.done ? "已提交，可以对照解析复习，或者重新作答。" : "选好三道题后提交，会显示对错和解析。作答会自动保存。";
+    box.appendChild(sub);
+    let score = 0;
+    qs.forEach(function (item, qi) {
+      const fs = document.createElement("fieldset");
+      const lg = document.createElement("legend"); lg.textContent = (qi + 1) + ". " + item.q; fs.appendChild(lg);
+      const pick = st.picks[qi];
+      if (st.done && pick === item.a) score++;
+      item.o.forEach(function (text, oi) {
+        const lab = document.createElement("label"); lab.className = "opt";
+        const inp = document.createElement("input"); inp.type = "radio"; inp.name = "q-" + aid + "-" + qi; inp.id = "q-" + aid + "-" + qi + "-" + oi;
+        inp.checked = pick === oi; inp.disabled = st.done;
+        inp.addEventListener("change", function () { st.picks[qi] = oi; persist(aid); updateSubmit(); });
+        const span = document.createElement("span"); span.textContent = LETTERS[oi] + ". " + text;
+        if (st.done) {
+          if (oi === item.a) { lab.classList.add("right"); const t = document.createElement("span"); t.className = "tag"; t.textContent = pick === oi ? "✓ 你的答案，正确" : "✓ 正确答案"; span.appendChild(t); }
+          else if (pick === oi) { lab.classList.add("wrong"); const t = document.createElement("span"); t.className = "tag"; t.textContent = "✗ 你的答案"; span.appendChild(t); }
+        }
+        lab.appendChild(inp); lab.appendChild(span); fs.appendChild(lab);
+      });
+      if (st.done) { const w = document.createElement("div"); w.className = "why"; w.textContent = item.why; fs.appendChild(w); }
+      box.appendChild(fs);
+    });
+    const bar = document.createElement("div"); bar.className = "bar";
+    const btn = document.createElement("button"); btn.type = "button";
+    if (st.done) {
+      const sc = document.createElement("span"); sc.className = "score"; sc.textContent = "得分 " + score + " / " + qs.length; bar.appendChild(sc);
+      btn.className = "ghost"; btn.textContent = "重新作答";
+      btn.addEventListener("click", function () { state[aid].quiz = { picks: {}, done: false }; persist(aid); renderQuiz(aid); });
+    } else {
+      btn.textContent = "提交答案";
+      btn.addEventListener("click", function () { st.done = true; persist(aid); renderQuiz(aid); });
+    }
+    bar.appendChild(btn); box.appendChild(bar);
+    function updateSubmit() { if (!st.done) btn.disabled = qs.some(function (_, i) { return typeof st.picks[i] !== "number"; }); }
+    updateSubmit();
+  }
+  Object.keys(state).forEach(renderQuiz);
+
+  /* ---------- Annotation menu ---------- */
+  const COLORS = [["yellow", "黄"], ["green", "绿"], ["pink", "粉"]];
+
+  function hideMenu() { menu.hidden = true; pending = null; activeId = null; activeAid = null; }
+
+  function placeMenu(rect) {
+    menu.hidden = false;
+    const mw = menu.offsetWidth;
+    const vw = document.documentElement.clientWidth;
+    let cx = rect.left + rect.width / 2;
+    const half = mw / 2;
+    const clamped = Math.min(Math.max(cx, half + 12), vw - half - 12);
+    menu.style.left = (clamped + window.scrollX) + "px";
+    menu.style.top = (rect.bottom + window.scrollY + 10) + "px";
+    menu.style.setProperty("--arrow", Math.min(Math.max(half + (cx - clamped), 14), mw - 14) + "px");
+  }
+
+  function buildMenu(opts) {
+    menu.textContent = "";
+    const row = document.createElement("div"); row.className = "row";
+    COLORS.forEach(function (c) {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "sw c-" + c[0];
+      b.setAttribute("aria-label", c[1] + "色高亮");
+      b.setAttribute("aria-pressed", String(opts.color === c[0]));
+      b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+      b.addEventListener("click", function () { opts.onColor(c[0]); });
+      row.appendChild(b);
+    });
+    const sep = document.createElement("span"); sep.className = "sep"; row.appendChild(sep);
+    const nb = document.createElement("button"); nb.type = "button"; nb.className = "act";
+    nb.textContent = opts.note ? "改备注" : "加备注";
+    nb.addEventListener("mousedown", function (e) { e.preventDefault(); });
+    nb.addEventListener("click", function () { showNoteEditor(opts); });
+    row.appendChild(nb);
+    if (opts.onDelete) {
+      const db_ = document.createElement("button"); db_.type = "button"; db_.className = "act"; db_.textContent = "删除";
+      db_.addEventListener("click", opts.onDelete);
+      row.appendChild(db_);
+    }
+    menu.appendChild(row);
+    if (opts.note) {
+      const v = document.createElement("div"); v.className = "note-view"; v.textContent = opts.note;
+      menu.appendChild(v);
+    }
+  }
+
+  function showNoteEditor(opts) {
+    const old = menu.querySelector(".note-edit, .note-view");
+    if (old) old.remove();
+    const box = document.createElement("div"); box.className = "note-edit";
+    const ta = document.createElement("textarea"); ta.id = "menu-note"; ta.placeholder = "写一句备注……"; ta.value = opts.note || "";
+    const sv = document.createElement("button"); sv.type = "button"; sv.className = "save"; sv.textContent = "保存备注";
+    sv.addEventListener("click", function () { opts.onNote(ta.value.trim()); });
+    ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) sv.click(); if (e.key === "Escape") hideMenu(); });
+    box.appendChild(ta); box.appendChild(sv);
+    menu.appendChild(box);
+    ta.focus();
+  }
+
+  function uidGen() { return "h" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  function createHighlight(color, note) {
+    if (!pending) return null;
+    const h = { id: uidGen(), start: pending.start, end: pending.end, text: pending.text, color: color, note: note || "" };
+    state[pending.aid].highlights.push(h);
+    const aid = pending.aid;
+    window.getSelection().removeAllRanges();
+    render(aid); persist(aid);
+    return { aid: aid, h: h };
+  }
+
+  function openForSelection(range, aid, start, end, text) {
+    pending = { aid: aid, start: start, end: end, text: text };
+    activeId = null;
+    buildMenu({
+      color: null, note: "",
+      onColor: function (c) { createHighlight(c); hideMenu(); },
+      onNote: function (n) {
+        const r = createHighlight("yellow", n);
+        hideMenu();
+        if (r) openForMark(r.aid, r.h.id);
+      }
+    });
+    placeMenu(range.getBoundingClientRect());
+  }
+
+  function findH(aid, id) { return state[aid].highlights.find(function (h) { return h.id === id; }); }
+
+  function openForMark(aid, id) {
+    const h = findH(aid, id);
+    const marks = document.querySelectorAll('mark.hl[data-id="' + id + '"]');
+    if (!h || !marks.length) return;
+    activeId = id; activeAid = aid; pending = null;
+    buildMenu({
+      color: h.color, note: h.note,
+      onColor: function (c) { h.color = c; render(aid); persist(aid); openForMark(aid, id); },
+      onNote: function (n) { h.note = n; render(aid); persist(aid); openForMark(aid, id); },
+      onDelete: function () {
+        state[aid].highlights = state[aid].highlights.filter(function (x) { return x.id !== id; });
+        render(aid); persist(aid); hideMenu();
+      }
+    });
+    const r = document.createRange();
+    r.setStartBefore(marks[0]); r.setEndAfter(marks[marks.length - 1]);
+    placeMenu(r.getBoundingClientRect());
+  }
+
+  function selectionInfo() {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
+    const range = sel.getRangeAt(0);
+    const startEl = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement;
+    const endEl = range.endContainer.nodeType === 1 ? range.endContainer : range.endContainer.parentElement;
+    const root = startEl && startEl.closest("[data-hl-root]");
+    if (!root || !endEl || endEl.closest("[data-hl-root]") !== root) return null;
+    const text = range.toString();
+    if (!text.trim()) return null;
+    const aid = root.closest("article.reading").id;
+    let start = offsetOf(root, range.startContainer, range.startOffset);
+    let end = offsetOf(root, range.endContainer, range.endOffset);
+    if (end <= start) return null;
+    // trim surrounding whitespace
+    const full = fullText(root);
+    while (start < end && /\s/.test(full[start])) start++;
+    while (end > start && /\s/.test(full[end - 1])) end--;
+    return { range: range, aid: aid, start: start, end: end, text: full.slice(start, end) };
+  }
+
+  let selTimer = null;
+  function checkSelection() {
+    const info = selectionInfo();
+    if (info) openForSelection(info.range, info.aid, info.start, info.end, info.text);
+  }
+  document.addEventListener("mouseup", function (e) {
+    if (menu.contains(e.target)) return;
+    setTimeout(function () {
+      const info = selectionInfo();
+      if (info) { openForSelection(info.range, info.aid, info.start, info.end, info.text); return; }
+      const m = e.target.closest && e.target.closest("mark.hl");
+      if (m) { openForMark(m.closest("article.reading").id, m.dataset.id); return; }
+      if (!menu.querySelector("textarea")) hideMenu();
+    }, 0);
+  });
+  // touch devices: selection is made with handles, so watch selectionchange
+  document.addEventListener("selectionchange", function () {
+    if (!matchMedia("(pointer: coarse)").matches) return;
+    clearTimeout(selTimer);
+    selTimer = setTimeout(checkSelection, 450);
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") hideMenu(); });
+  window.addEventListener("resize", hideMenu);
+
+  /* ---------- Cloud sync (per-viewer private store) ---------- */
+  setSaveText("已保存在本浏览器");
+  (async function () {
+    if (!window.claude || !window.claude.use) return;
+    try {
+      const [d, u] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if (!d || !u) return;
+      const id = await u.id();
+      if (!id) return;
+      db = d; uid = id;
+      setSaveText("已连接云端，自动保存");
+      for (const aid of Object.keys(state)) {
+        try {
+          const snap = await db.collection("data/users/" + uid).doc(aid).get();
+          if (snap.exists) {
+            const remote = normalize(snap.data());
+            if ((remote.updatedAt || 0) >= (state[aid].updatedAt || 0)) {
+              state[aid] = remote;
+              lsSet("sh-art-" + aid, JSON.stringify(remote));
+              render(aid);
+            } else { pushRemote(aid); }
+          } else if (state[aid].highlights.length || state[aid].note) { pushRemote(aid); }
+        } catch (e) { setSaveText("云端读取失败，先用本浏览器的存档"); }
+      }
+    } catch (e) {}
+  })();
+})();
+</script>
