@@ -24,6 +24,6 @@ Progress, quiz answers, notes, and highlights are saved only in that browser's `
 Study summaries are reading aids, not original quotations. Check cited pages and paragraphs against your assigned readings before using them in academic work.
 
 ## Song painting (宋画) workbench
-- `song-painting/wang-up-the-river.html`: Song painting reading workbench, organized by week: W2 (Munakata on Jing Hao's *Bifa ji*; Hay on *Travellers in Snow-covered Mountains*), W3 (Wen Fong, *Possessing the Past* ch. 5–6; Barnhart, "Figures in Landscape") and W4 (Wang Cheng-hua, *Up the River of Time*, Introduction and Chapters 1–2), with highlights, notes and quizzes.
+- `song-painting/wang-up-the-river.html`: Song painting reading workbench, organized by week: W1 (Hearn, *How to Read Chinese Paintings*, with a review; Song classification texts; Ledderose on subject matter), W2 (Munakata on Jing Hao's *Bifa ji*; Hay on *Travellers in Snow-covered Mountains*), W3 (Wen Fong, *Possessing the Past* ch. 5–6; Barnhart, "Figures in Landscape") and W4 (Wang Cheng-hua, *Up the River of Time*, Introduction and Chapters 1–2), with highlights, notes and quizzes.
 - Once Pages is on: https://lin-0903.github.io/Academic-Critical-Reading-Workbench/song-painting/wang-up-the-river.html
 - Highlights and notes saved here live in this site's `localStorage`; they do not sync with the copy on claude.ai.
