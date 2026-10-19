@@ -22,3 +22,8 @@ This public repository deliberately does **not** distribute copyrighted course P
 Progress, quiz answers, notes, and highlights are saved only in that browser's `localStorage` for the site's origin. They do not sync automatically with GitHub or Obsidian; export JSON backups periodically. Switching from a local file to GitHub Pages does not automatically carry local browser data across origins.
 
 Study summaries are reading aids, not original quotations. Check cited pages and paragraphs against your assigned readings before using them in academic work.
+
+## Song painting (宋画) workbench
+- `song-painting/wang-up-the-river.html`: reading workbench for Wang Cheng-hua, *Up the River of Time* (Introduction, Chapters 1–2), with highlights, notes and quizzes.
+- Once Pages is on: https://lin-0903.github.io/Academic-Critical-Reading-Workbench/song-painting/wang-up-the-river.html
+- Highlights and notes saved here live in this site's `localStorage`; they do not sync with the copy on claude.ai.
