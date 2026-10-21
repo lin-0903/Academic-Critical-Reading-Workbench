@@ -20,6 +20,7 @@
   --def: #8a5a2b;    --def-bg: #f4ece2;    /* 定义 赭石 */
   --res: #3d7a5f;    --res-bg: #e5f0ea;    /* 研究 石绿 */
   --con: #8c3b52;    --con-bg: #f4e6ea;    /* 结论 胭脂 */
+  --deb: #5b4f7a;    --deb-bg: #eeecf4;    /* 争论 藤紫 */
 
   --hl-yellow: rgba(250, 214, 60, .45);
   --hl-green: rgba(120, 200, 120, .40);
@@ -36,7 +37,7 @@
     --bg: #16191c; --panel: #1c2024; --paper: #1a1e21; --ink: #e3e5e3; --ink-2: #aeb4b8; --ink-3: #7c848a;
     --line: #30363b; --accent: #8fb6d1; --accent-soft: #22303a;
     --core: #8fb6d1; --core-bg: #1f2b33; --def: #d6aa7a; --def-bg: #2b241c;
-    --res: #8cc7a8; --res-bg: #1c2a23; --con: #e09ab0; --con-bg: #2e1f25;
+    --res: #8cc7a8; --res-bg: #1c2a23; --con: #e09ab0; --con-bg: #2e1f25; --deb: #bfb2e3; --deb-bg: #25222f;
     --hl-yellow: rgba(230, 190, 40, .38); --hl-green: rgba(90, 180, 100, .36); --hl-pink: rgba(230, 100, 150, .36);
     --shadow: 0 6px 24px rgba(0, 0, 0, .5);
     color-scheme: dark;
@@ -46,7 +47,7 @@
   --bg: #16191c; --panel: #1c2024; --paper: #1a1e21; --ink: #e3e5e3; --ink-2: #aeb4b8; --ink-3: #7c848a;
   --line: #30363b; --accent: #8fb6d1; --accent-soft: #22303a;
   --core: #8fb6d1; --core-bg: #1f2b33; --def: #d6aa7a; --def-bg: #2b241c;
-  --res: #8cc7a8; --res-bg: #1c2a23; --con: #e09ab0; --con-bg: #2e1f25;
+  --res: #8cc7a8; --res-bg: #1c2a23; --con: #e09ab0; --con-bg: #2e1f25; --deb: #bfb2e3; --deb-bg: #25222f;
   --hl-yellow: rgba(230, 190, 40, .38); --hl-green: rgba(90, 180, 100, .36); --hl-pink: rgba(230, 100, 150, .36);
   --shadow: 0 6px 24px rgba(0, 0, 0, .5);
   color-scheme: dark;
@@ -118,6 +119,16 @@ article.reading { margin-bottom: 96px; }
 .box.def  { --b: var(--def);  --b-bg: var(--def-bg); }
 .box.res  { --b: var(--res);  --b-bg: var(--res-bg); }
 .box.con  { --b: var(--con);  --b-bg: var(--con-bg); }
+.box.deb  { --b: var(--deb);  --b-bg: var(--deb-bg); }
+.box.deb .deb-q { color: var(--ink-2); }
+.box.deb .dside { margin: .9em 0 1em; }
+.box.deb .dside h4 { font-size: 15.5px; margin: 0 0 .35em; }
+.box.deb .dside h4 .who { font-family: var(--f-ui); font-size: 12.5px; font-weight: 400; color: var(--ink-2); margin-left: 6px; }
+.box.deb .dside.reply { border-top: 1px dashed var(--deb); padding-top: .8em; }
+.box.deb .dside.mine-side { font-size: .95em; color: var(--ink-2); }
+.box.deb .dside.mine-side h4 { font-family: var(--f-ui); font-size: 12.5px; color: var(--ink-3); }
+.deb-intro { color: var(--ink-2); }
+.article-body h3.deb-sub { color: var(--deb); }
 .box h3:first-of-type { margin-top: .2em; }
 dl.terms { margin: 0 0 .8em; display: grid; gap: .6em; }
 dl.terms dt { font-weight: 600; }
@@ -215,6 +226,7 @@ mark.hl.flash { outline: 2px solid var(--accent); }
       <span><i style="background:var(--core)"></i>核心观点</span>
       <span><i style="background:var(--def)"></i>定义与术语</span>
       <span><i style="background:var(--con)"></i>结论与局限</span>
+      <span><i style="background:var(--deb)"></i>学术争论</span>
       <span><i class="c-yellow"></i><i class="c-green"></i><i class="c-pink"></i>我的高亮</span>
     </div>
     <div class="save-state" id="saveState">载入中…</div>
@@ -1354,7 +1366,7 @@ mark.hl.flash { outline: 2px solid var(--accent); }
       <ul>
         <li><strong>虹桥</strong>：无脚桥是 1030–40 年代的技术成就，但画中拱度陡得无法通行。这是有意的理想化，强化「虹」的祥瑞与仙境联想，正合徽宗对祥瑞之物的偏好。</li>
         <li><strong>城门</strong>：同时画出正面与左侧面，现实中不可能一眼看到，是唐代就有的<strong>图式</strong>（<span class="en">schema</span>）。门楼上的鼓象征政治权威，骆驼队显示都城的四方来客。</li>
-        <li><strong>桥下险情</strong>：作者反驳曹星原、余辉的凶兆说，认为这是众人协力、即将化险为夷：桥左的大船已安然泊岸。宫廷画不太可能暗示衰世。</li>
+        <li><strong>桥下险情</strong>：作者反驳凶兆说（余辉一路），与曹星原「同舟共济」的读法相近，认为这是众人协力、即将化险为夷：桥左的大船已安然泊岸。宫廷画不太可能暗示衰世。</li>
       </ul>
       <p>「写实神话」常常遮蔽了画中的象征意义。</p>
     </div>
@@ -1362,6 +1374,210 @@ mark.hl.flash { outline: 2px solid var(--accent); }
     <div class="box core">
       <span class="lbl">核心观点 6 · 徽宗朝的「三部曲」</span>
       <p>《听琴图》、《清明上河图》、《千里江山图》各自对应徽宗治国的一个面向：君臣关系、政府管理漕运与维系京师、「天下」疆域。三幅的地理范围依次扩大（宫苑、京畿、江南乃至天下），共同投射政和年间（1111–1118）「<strong>丰亨豫大</strong>」的盛世形象。它们的手法都是<strong>准纪实</strong>（<span class="en">quasi-documentary</span>）：用逼真的细节和可辨认的现实经验营造真实感，为皇帝的政治讯息背书，模糊艺术再现与现实经验的界线。</p>
+    </div>
+
+    <h2>学术现状批判：各方理由</h2>
+    <p class="deb-intro">对应原文「Current Scholarship: A Critical Review」一节（pp. 30–36）及其延续（p. 39），后面附本章另外两场争论。作者在这一节里先回顾两种史学读法，再逐一检讨断代、作者、画题三个艺术史问题。下面把每场争论拆成「谁、主张什么、凭什么」，再看作者怎样回应。〔p.X〕是原书页码；「我的看法」是我的判断，不是作者原话。</p>
+
+    <div class="box deb">
+      <span class="lbl">争论 1 · 方法：把画当史料，还是当有动机的图像？</span>
+      <div class="dside">
+        <h4>史学读法 <span class="who">大量历史研究（2007 年的书目已列出三百多种）</span></h4>
+        <ul>
+          <li><strong>做法一</strong>：用文献和图像考证画中的地理位置和具体景物。</li>
+          <li><strong>做法二</strong>：把画当北宋的视觉记录，引用细节讨论建筑、行业、职业、水陆交通等。〔p.30〕</li>
+        </ul>
+      </div>
+      <div class="dside reply">
+        <h4>作者的回应：同意 Julia Murray 的批评</h4>
+        <ol>
+          <li>这些研究把画当作北宋社会生活「未经中介」的再现。</li>
+          <li><strong>反证</strong>：两项都做得很扎实的地理对位研究，得出了不同结论，说明字面读法只会导致混乱。</li>
+          <li><strong>但不全盘否定</strong>：历史考证能帮助辨认景物，让我们看出画家从现实中取了什么、强调了什么，这正是理解画的图像目标的关键。〔p.30〕</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="box deb">
+      <span class="lbl">争论 2 · 断代：北宋早中期，还是北宋晚期？</span>
+      <p class="deb-q">诸家断代从 11 世纪初到 12 世纪初，相差约百年，风格分析一直没有共识。〔p.30〕</p>
+      <div class="dside">
+        <h4>早中期说 <span class="who">班宗华 Richard Barnhart、乔迅 Jonathan Hay（近几十年的新说）</span></h4>
+        <ul>
+          <li><strong>主张</strong>：画作于 11 世纪早期或中期（北宋早中期），比传统看法提早约半个到一个世纪。</li>
+          <li><strong>理由一，题材</strong>：描绘日常、世俗生活，是北宋早期绘画的特征。</li>
+          <li><strong>理由二，画法</strong>：对器物与场景的写实描绘，也被视为北宋早期的特点。</li>
+          <li><strong>常用比较品</strong>：传卫贤《闸口盘车》（有酒楼）和传郭忠恕《雪霁江行》（有大船），两者都带北宋早期风格，又与《清明》有共同母题。〔p.30〕</li>
+        </ul>
+      </div>
+      <div class="dside">
+        <h4>晚期说 <span class="who">传统看法；近年陈韵如</span></h4>
+        <ul>
+          <li><strong>主张</strong>：作于 12 世纪初（北宋晚期）。</li>
+          <li><strong>理由一，题跋</strong>：卷后题跋（最早是张著 1186 年跋）一向被读作指向北宋末，这是传统断代的根据。〔p.30〕</li>
+          <li><strong>理由二，山水部分</strong>：陈韵如分析卷首树木与地面的空间构成，这一段山水元素最多，可以和山水画比较，结果也指向 12 世纪初。〔p.31–33〕</li>
+        </ul>
+      </div>
+      <div class="dside reply">
+        <h4>作者的回应：站在晚期说，但换一套证据</h4>
+        <ol>
+          <li><strong>把早期说的比较品翻过来用</strong>：《闸口盘车》《雪霁江行》的门窗浮雕画得立体、可触，表现的是对外部世界物理状态的兴趣；《清明》的建筑立面和船身木作却是<strong>程式化</strong>的，窗格几乎不顾立体感。共同母题不说明同时代，反而说明《清明》用的是已经成熟的图式，是明显更晚的画。〔p.31〕</li>
+          <li><strong>加一件有年代的比较品</strong>：山西开化寺壁画（11 世纪末）里画法相近的船，进一步否定早中期说。〔p.31〕</li>
+          <li><strong>解释为什么会吵不清</strong>：各家关注的细节不同，而界画可比的实物太少（不到一手之数）。所以改看「元特征」：手卷怎样串联、切换场景。这样能和数量多得多的山水手卷比较。〔p.30, 33〕</li>
+          <li><strong>手卷格式</strong>：10 世纪到 11 世纪中的手卷是单景或同质空间；1080 年代郭熙《树色平远》、王诜《渔村小雪》才开始多景、异质。《清明》的三段转换比它们更复杂，所以不会更早。〔p.40–45〕</li>
+          <li><strong>用班宗华反驳班宗华</strong>：班宗华本人指出约 1085 年是宋代山水的分水岭，此后出现抒情倾向；《清明》开篇的空舟正是这种抒情。〔p.46〕</li>
+          <li><strong>笔法与母题</strong>：枯枝笔法自由、带个人性，而 10 世纪初到 11 世纪中的笔法主要用于描述形体、少有表现意图；竹子、湖石的画法近于传徽宗《雪江归棹》等徽宗朝作品。〔p.46–47〕</li>
+          <li><strong>宗教政策收窄年份</strong>：画里有道士，也有行脚僧和城门边的佛寺；徽宗 1119–1120 年间废佛、令佛像改穿道服，这期间不可能这样画；1120 年以后又太接近 1127 年北宋覆亡。所以是 1113–1119 年间。〔p.58〕</li>
+        </ol>
+      </div>
+      <div class="dside mine-side">
+        <h4>我的看法</h4>
+        <ul>
+          <li>早期说的两条理由（世俗题材、写实）是对时代风格的整体印象；作者给的是具体的对照，论证更硬。</li>
+          <li>但「程式化 = 更晚」不是必然：程式化也可能是画种或画工层级不同造成的。《雪霁江行》本身又可能是 10 世纪晚期画的摹本（作者的图注也这样说），拿它当早期标尺要小心。</li>
+          <li>宗教一条的前提是画家会忠实回应朝廷宗教政策；1113 这个上限主要来自《听琴图》的推断，与《清明》本身关系较间接。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="box deb">
+      <span class="lbl">争论 3 · 作者是不是张择端？</span>
+      <div class="dside">
+        <h4>传统归属 <span class="who">张著 1186 年跋</span></h4>
+        <ul>
+          <li><strong>依据</strong>：卷上第一则题跋。张著简述张择端的出身与擅长，最后引一则记录，列出他的两件作品，其中之一就是《清明上河》。这是归属和张择端生平的唯一来源。有学者试图从这则跋里挖出更多生平细节。〔p.34〕</li>
+        </ul>
+      </div>
+      <div class="dside reply">
+        <h4>作者的立场：搁置，而且不影响读画</h4>
+        <ol>
+          <li><strong>证据只有一条</strong>：支持或反对张择端，都完全取决于这一则既难证实、也难证伪的材料；张择端在画史上别无记载。</li>
+          <li><strong>另找画家也无果</strong>：文献里风格、题材相合的其他画家都没有作品存世可比。</li>
+          <li><strong>不是例外</strong>：多数北宋画本来就没有可靠归属。</li>
+          <li><strong>画本身能告诉我们的</strong>：长卷风格和质量高度一致，应为一人所作；建筑和船基本不用界尺，徒手线条可辨；枯枝笔法有个人性。这些比一个名字更有用。〔p.34–35〕</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="box deb">
+      <span class="lbl">争论 4 · 「清明」是什么意思？</span>
+      <p class="deb-q">「上河」争议不大，指「上溯」或「上桥」；「清明」的解释却决定了怎样理解画的原初目的。〔p.35〕</p>
+      <div class="dside">
+        <h4>清明节说 <span class="who">可追溯到李东阳 1491、1515 年的两则题跋</span></h4>
+        <ul>
+          <li><strong>理由</strong>：字面看，「清明」是有特殊风俗的春季节日，画的是清明时节的汴京。这是流传最久、最通行的读法。〔p.35〕</li>
+        </ul>
+      </div>
+      <div class="dside">
+        <h4>开航日说 <span class="who">曹星原</span></h4>
+        <ul>
+          <li><strong>理由</strong>：保留「清明」作为春季时令的意思，但修正为：长冬过后，流经开封的汴河每年开始通航的日子。〔p.36〕</li>
+        </ul>
+      </div>
+      <div class="dside">
+        <h4>政治清明说 <span class="who">取「清明」的古义</span></h4>
+        <ul>
+          <li><strong>理由</strong>：「清明」在更古老的用法里可指圣明统治下的太平之世。照此，「清明上河」指与运河、桥梁有关的活动，而这些公共工程可能被视为善政的典范。〔p.36〕</li>
+        </ul>
+      </div>
+      <div class="dside reply">
+        <h4>作者的回应：画的是平常的一天</h4>
+        <ol>
+          <li><strong>没有节庆气氛</strong>：全卷看不出庆祝的场面，否定清明节说。</li>
+          <li><strong>漕船已经到了</strong>：桥边的漕船有的已泊岸，有的整装待上行。这些船从开封以南很远的地方来，所以不可能是开航第一天，否定开航日说。</li>
+          <li><strong>与古义相合</strong>：平常的一天，正好配合「清明」作为称颂当朝现状的用语。〔p.39〕</li>
+        </ol>
+      </div>
+      <div class="dside mine-side">
+        <h4>我的看法</h4>
+        <p>前两条是用画面证据否定节令说，相当有力；但「政治清明」一说并没有被画面直接证明，它是排除其他读法之后剩下的解释，再由徽宗朝的政治议程（见核心观点 6）来支撑。</p>
+      </div>
+    </div>
+
+    <div class="box deb">
+      <span class="lbl">争论 5 · 政治情境：神宗朝的效忠，还是徽宗朝的讽谏？</span>
+      <div class="dside">
+        <h4>神宗朝说 <span class="who">曹星原 Tsao Hsingyuan</span></h4>
+        <ul>
+          <li><strong>主张</strong>：画作于 1070 年代末神宗朝，题材是一年一度的汴河开航日。</li>
+          <li><strong>理由</strong>：神宗推行变法，朝中与皇室亲族间政争激烈，皇帝陷入政治与社会的不信任。曹认为皇后在其强大家族支持下委托此画，借它向皇帝表示忠诚。</li>
+          <li><strong>方法</strong>：主要依据神宗即位头十年的历史背景，重建此画的制作与意义。〔p.39〕</li>
+        </ul>
+      </div>
+      <div class="dside">
+        <h4>徽宗朝隐忧说 <span class="who">余辉 Yu Hui</span></h4>
+        <ul>
+          <li><strong>主张</strong>：画作于 12 世纪初徽宗朝。</li>
+          <li><strong>理由</strong>：把画中许多细节读作深藏的政治讯息，合起来是画家张择端设下的一个极复杂的谜，用来预示徽宗日渐衰败的政权即将面临的危险。〔p.39〕</li>
+        </ul>
+      </div>
+      <div class="dside reply">
+        <h4>作者的回应：两说都「过度诠释」</h4>
+        <ol>
+          <li><strong>循环论证</strong>：两人都先从文献里推出一个「相关的」历史情境，再把画中与文献对得上的题材和细节拿来证明画属于这个情境，于是把画绑到某一位皇帝身上。画被迫从属于情境。</li>
+          <li><strong>忽略风格</strong>：两说都以推测为主，没有认真检验画的风格。</li>
+          <li><strong>细节近乎虚构</strong>：曹的情节有些地方过分精巧，「近乎幻想」，比如推测皇帝和外戚在制作、进呈此画时的心理状态。</li>
+          <li><strong>根本问题没解决</strong>：编织出来的复杂情节缺乏坚实基础，断代与制作情境这两个基本问题仍悬而未决。作者因此先用风格和格式断代，再谈意义。〔p.39〕</li>
+        </ol>
+      </div>
+      <div class="dside mine-side">
+        <h4>我的看法</h4>
+        <p>作者对余辉的批评与她自己的结论正好相反：同在徽宗朝，余辉读出「隐忧」，她读出「颂圣」。决定读法的，其实是对宫廷画功能的预设（宫廷画会不会批评皇帝），而不是画面本身。她的「三部曲」同样缺少直接文献，只是建立在风格断代之上，基础比对方稳一些。</p>
+      </div>
+    </div>
+
+    <h3 class="deb-sub">本章其他争论</h3>
+    <div class="box deb">
+      <span class="lbl">争论 6 · 画的是开封，还是一座泛指的城市？</span>
+      <p class="deb-q">学者大都同意画中河流是汴河，即把南方粮食运到京城的运河；分歧在城市。〔p.38〕</p>
+      <div class="dside">
+        <h4>泛指城市说 <span class="who">韩森 Valerie Hansen</span></h4>
+        <ul>
+          <li><strong>理由</strong>：画中没有任何开封独有的地标或事物，所以它可能画的是一座带理想化成分的一般城市。〔p.38〕</li>
+        </ul>
+      </div>
+      <div class="dside reply">
+        <h4>作者的回应：重心是运河，但城市不是随便哪座</h4>
+        <ol>
+          <li><strong>换问题</strong>：画的焦点本来就不是城市而是运河，城内只画了短短一段；这一小段恰恰显示「不是随便哪座城」。</li>
+          <li><strong>建筑等级证据</strong>：高村雅彦分析朝廷对建筑的规定，指出画中部分城市建筑等级很高：城门上的脊兽、城内官员宅第的独立门屋，按北宋的建筑等级制度只有都城才配。</li>
+          <li><strong>交通枢纽</strong>：桥被画成水陆交通的枢纽，与汴河—开封的关系相符。〔p.38–39〕</li>
+        </ol>
+      </div>
+      <div class="dside mine-side">
+        <h4>我的看法</h4>
+        <p>两人的分歧比看起来小：作者自己也强调城门是唐代就有的图式、虹桥被理想化。所以真正的问题是「理想化的开封」还是「理想化的一般城市」；作者靠等级制度把它锁定为都城，Hansen 的「没有地标」则是一个缺席论证。</p>
+      </div>
+    </div>
+
+    <div class="box deb">
+      <span class="lbl">争论 7 · 桥下险情：凶兆还是吉兆？</span>
+      <p class="deb-q">一艘大船要放倒桅杆、逆着急流从桥下通过，船工吃力掌舵，纤夫抢位拉绳，桥上和别的船上的人大声喊话、比手画脚。这是全卷高潮，也是隐喻读法最多的地方。〔p.37, 53–54〕</p>
+      <div class="dside">
+        <h4>凶兆说 <span class="who">「有些学者」，余辉的隐忧说属于这一路</span></h4>
+        <ul>
+          <li><strong>理由</strong>：把这一幕读作危机场面，传达不祥的政治讯息：盛世之下暗藏危局。〔p.53–54〕</li>
+        </ul>
+      </div>
+      <div class="dside">
+        <h4>同舟共济说 <span class="who">曹星原</span></h4>
+        <ul>
+          <li><strong>理由</strong>：曹进一步把它读作社会应当集体化解危机，图解「同舟共济」这句古语：动荡时局中，众人命运相系，需要协力。〔p.54〕</li>
+          <li>注意：作者在断代和政治情境上反对曹，但在这一幕的寓意上与曹接近。</li>
+        </ul>
+      </div>
+      <div class="dside reply">
+        <h4>作者的回应：寓意是化险为夷</h4>
+        <ol>
+          <li><strong>隐喻读法本身是合理的</strong>：徽宗朝的画常有寓意。徽宗在一幅五彩锦鸡画上亲题，说这只鸟体现「五德」；王希孟《千里江山图》从雨雾中的城市过渡到青绿仙境，寓「雨过天青」。所以问题不是该不该读寓意，而是读出什么寓意。</li>
+          <li><strong>画面证据</strong>：桥左边更大的船已安然泊岸，暗示这艘船的险情很快会解除；城市的繁荣靠居民与来客的集体劳动，靠水运按时送来物资。</li>
+          <li><strong>赞助者证据</strong>：这是宫廷画，极不可能暗示社会动荡、政权衰落。高潮只是为长卷增加戏剧性，最终营造太平繁荣的安心感。〔p.54–55〕</li>
+        </ol>
+      </div>
+      <div class="dside mine-side">
+        <h4>我的看法</h4>
+        <p>第 2 条是画面证据，第 3 条是关于赞助关系的推论。凶兆说的支持者会反驳：正因为是宫廷画，批评才只能「曲」，藏在细节里。双方真正的分歧仍是争论 5 里的那个预设。</p>
+      </div>
     </div>
 
     <div class="box def">
@@ -1868,7 +2084,7 @@ mark.hl.flash { outline: 2px solid var(--accent); }
       { q: "作者推测《清明上河图》最可能作于什么时候？", o: ["11 世纪初宋真宗朝", "1070 年代末宋神宗朝", "1113–1119 年间徽宗朝", "1120 年以后北宋将亡之际"], a: 2,
         why: "依据是手卷格式从单景走向多景的发展、与赵令穰和徽宗朝作品相近的笔法与母题，以及画中出现佛寺和僧人（徽宗约 1119–1120 年废佛）。B 是曹星原的说法。" },
       { q: "关于虹桥下船只遇险的场景，作者的解读是：", o: ["表现众人协力、化险为夷，寓意太平", "暗示北宋政权即将覆亡", "纪实描绘汴河开航日的混乱", "讽刺漕运管理不善"], a: 0,
-        why: "作者反驳曹星原、余辉的凶兆说：桥左的大船已安然泊岸，暗示险情即将解除；宫廷画也不太可能暗示衰世。寓意是同舟共济、化险为夷。" },
+        why: "作者反驳凶兆说（余辉一路），读法与曹星原的「同舟共济」相近：桥左的大船已安然泊岸，暗示险情即将解除；宫廷画也不太可能暗示衰世。寓意是同舟共济、化险为夷。" },
       { q: "作者所说的徽宗朝「三部曲」不包括哪一幅？", o: ["《听琴图》", "《千里江山图》", "《清明上河图》", "《雪霁江行图》"], a: 3,
         why: "三部曲是《听琴图》（君臣）、《清明上河图》（漕运与京师）、《千里江山图》（天下疆域），地理范围依次扩大。《雪霁江行图》是断代比较时用的早期作品。" }
     ],
